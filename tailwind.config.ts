@@ -9,18 +9,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Palet Baru Sesuai Permintaan:
+        brand: {
+          primary: "#0857C3",   // Warna ke-2: Biru Utama Elegan
+          secondary: "#307FE3", // Warna ke-3: Biru Terang Interaktif
+          accent: "#71C5E8",    // Warna ke-4: Biru Langit / Cyan Lembut
+          light: "#F0F7FD",     // Latar belakang lembut kartu
+          dark: "#053E8C",      // Shading kontras
+        },
         bri: {
           blue: {
-            DEFAULT: "#00529C",
-            dark: "#003A70",
-            light: "#E6F0FA",
-            hover: "#004380",
+            DEFAULT: "#0857C3",
+            hover: "#307FE3",
+            light: "#F0F7FD",
+            dark: "#053E8C",
           },
-          orange: {
-            DEFAULT: "#F37021",
-            dark: "#D4580D",
-            light: "#FEF2E8",
-          },
+          secondary: "#307FE3",
+          accent: "#71C5E8",
         },
       },
       screens: {

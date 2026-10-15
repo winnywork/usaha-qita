@@ -27,10 +27,11 @@ import {
 } from "@/types/user";
 import { getUserProfile, saveUserProfile } from "@/services/storageService";
 import { formatRupiah } from "@/core/finance/calculator";
+import { useLanguage } from "@/context/LanguageContext";
 
 const CATEGORY_ICONS: Record<BusinessCategory, React.ReactNode> = {
-  kuliner: <Utensils className="w-5 h-5 text-amber-600" />,
-  jasa: <Wrench className="w-5 h-5 text-blue-600" />,
+  kuliner: <Utensils className="w-5 h-5 text-brand-secondary" />,
+  jasa: <Wrench className="w-5 h-5 text-brand-primary" />,
   ritel: <Store className="w-5 h-5 text-emerald-600" />,
   agribisnis: <Sprout className="w-5 h-5 text-green-600" />,
   kreatif: <Palette className="w-5 h-5 text-purple-600" />,
@@ -38,20 +39,19 @@ const CATEGORY_ICONS: Record<BusinessCategory, React.ReactNode> = {
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { t, language } = useLanguage();
 
   // Form State
   const [targetGoal, setTargetGoal] = useState<TargetGoal>("mulai_baru");
   const [cityLocation, setCityLocation] = useState<string>("Jakarta");
   const [categoryInterest, setCategoryInterest] = useState<BusinessCategory[]>(["kuliner"]);
-  const [availableCapital, setAvailableCapital] = useState<number>(5000000); // 5 Juta bawaan
+  const [availableCapital, setAvailableCapital] = useState<number>(5000000);
   const [experience, setExperience] = useState<ExperienceLevel>("pemula");
   const [timeCommitment, setTimeCommitment] = useState<TimeCommitment>("penuh_waktu");
 
-  // Step wizard: 1 (Tujuan & Lokasi), 2 (Bidang Usaha), 3 (Modal & Pengalaman)
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  // Load existing profile if any
   useEffect(() => {
     const existing = getUserProfile();
     if (existing) {
@@ -69,7 +69,11 @@ export default function OnboardingPage() {
     setErrorMessage("");
     if (categoryInterest.includes(cat)) {
       if (categoryInterest.length === 1) {
-        setErrorMessage("Pilih minimal 1 kategori bidang usaha yang Anda minati.");
+        setErrorMessage(
+          language === "en"
+            ? "Please select at least 1 business category."
+            : "Pilih minimal 1 kategori bidang usaha yang Anda minati."
+        );
         return;
       }
       setCategoryInterest(categoryInterest.filter((c) => c !== cat));
@@ -83,25 +87,36 @@ export default function OnboardingPage() {
 
     if (currentStep === 1) {
       if (!cityLocation.trim()) {
-        setErrorMessage("Silakan isi nama kota atau domisili rencana lokasi usaha Anda.");
+        setErrorMessage(
+          language === "en"
+            ? "Please enter your target business city or location."
+            : "Silakan isi nama kota atau domisili rencana lokasi usaha Anda."
+        );
         return;
       }
       setCurrentStep(2);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (currentStep === 2) {
       if (categoryInterest.length === 0) {
-        setErrorMessage("Pilih minimal satu kategori minat usaha.");
+        setErrorMessage(
+          language === "en"
+            ? "Please select at least one business category."
+            : "Pilih minimal satu kategori minat usaha."
+        );
         return;
       }
       setCurrentStep(3);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (currentStep === 3) {
       if (availableCapital < 1000000) {
-        setErrorMessage("Anggaran modal awal minimal adalah Rp 1.000.000 untuk simulasi usaha.");
+        setErrorMessage(
+          language === "en"
+            ? "Minimum capital is IDR 1,000,000 for simulation."
+            : "Anggaran modal awal minimal adalah Rp 1.000.000 untuk simulasi usaha."
+        );
         return;
       }
 
-      // Simpan profil ke localStorage
       const profile: UserProfile = {
         targetGoal,
         cityLocation: cityLocation.trim(),
@@ -112,8 +127,6 @@ export default function OnboardingPage() {
       };
 
       saveUserProfile(profile);
-
-      // Navigasi ke katalog rekomendasi peluang
       router.push("/rekomendasi");
     }
   };
@@ -131,58 +144,57 @@ export default function OnboardingPage() {
       {/* Header Wizard */}
       <div className="space-y-3 text-center sm:text-left">
         <div className="inline-flex items-center gap-2">
-          <Badge variant="blue">Langkah {currentStep} dari 3</Badge>
-          <span className="text-xs text-slate-500">Perencanaan Personal</span>
+          <Badge variant="blue">
+            {t.onboarding.stepLabel} {currentStep} {t.onboarding.ofLabel}
+          </Badge>
+          <span className="text-xs text-slate-500 font-medium">{t.onboarding.personalPlan}</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          Formulir Profil & Rencana Usaha
+          {t.onboarding.title}
         </h1>
         <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-          Informasi ini digunakan untuk menyaring dan mencocokkan peluang usaha yang paling realistis sesuai kondisi modal Anda.
+          {t.onboarding.subtitle}
         </p>
 
-        {/* Progress Bar */}
+        {/* Progress Bar dengan brand-primary */}
         <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
           <div
-            className="bg-bri-blue h-full transition-all duration-300"
+            className="bg-brand-primary h-full transition-all duration-300"
             style={{ width: `${(currentStep / 3) * 100}%` }}
           />
         </div>
       </div>
 
-      {errorMessage && (
-        <ErrorAlert message={errorMessage} />
-      )}
+      {errorMessage && <ErrorAlert message={errorMessage} />}
 
       {/* STEP 1: Tujuan & Lokasi */}
       {currentStep === 1 && (
         <Card className="p-6 sm:p-8 space-y-6">
           <div className="space-y-2">
             <h2 className="text-base sm:text-lg font-bold text-slate-900">
-              1. Apa Tujuan Utama & Lokasi Usaha Anda?
+              {t.onboarding.step1Heading}
             </h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Tentukan apakah Anda ingin merintis usaha pertama kali atau membuka cabang baru.
+              {t.onboarding.step1Sub}
             </p>
           </div>
 
-          {/* Pilihan Tujuan */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
               type="button"
               onClick={() => setTargetGoal("mulai_baru")}
               className={`p-4 rounded-2xl border text-left flex flex-col gap-2 transition-all min-h-[90px] ${
                 targetGoal === "mulai_baru"
-                  ? "border-bri-blue bg-blue-50/70 ring-2 ring-bri-blue/20"
+                  ? "border-brand-primary bg-brand-light ring-2 ring-brand-secondary/20"
                   : "border-slate-200 bg-white hover:border-slate-300"
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-sm text-slate-900">Merintis Usaha Baru</span>
-                {targetGoal === "mulai_baru" && <Check className="w-4 h-4 text-bri-blue" />}
+                <span className="font-bold text-sm text-slate-900">{t.onboarding.newBusiness}</span>
+                {targetGoal === "mulai_baru" && <Check className="w-4 h-4 text-brand-primary" />}
               </div>
               <span className="text-xs text-slate-600 leading-relaxed">
-                Pertama kali memulai wirausaha dari nol dengan risiko terukur.
+                {t.onboarding.newBusinessDesc}
               </span>
             </button>
 
@@ -191,52 +203,51 @@ export default function OnboardingPage() {
               onClick={() => setTargetGoal("ekspansi_usaha")}
               className={`p-4 rounded-2xl border text-left flex flex-col gap-2 transition-all min-h-[90px] ${
                 targetGoal === "ekspansi_usaha"
-                  ? "border-bri-blue bg-blue-50/70 ring-2 ring-bri-blue/20"
+                  ? "border-brand-primary bg-brand-light ring-2 ring-brand-secondary/20"
                   : "border-slate-200 bg-white hover:border-slate-300"
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-sm text-slate-900">Ekspansi / Tambah Cabang</span>
-                {targetGoal === "ekspansi_usaha" && <Check className="w-4 h-4 text-bri-blue" />}
+                <span className="font-bold text-sm text-slate-900">{t.onboarding.expandBusiness}</span>
+                {targetGoal === "ekspansi_usaha" && <Check className="w-4 h-4 text-brand-primary" />}
               </div>
               <span className="text-xs text-slate-600 leading-relaxed">
-                Sudah memiliki usaha dan ingin menambah lini produk atau cabang baru.
+                {t.onboarding.expandBusinessDesc}
               </span>
             </button>
           </div>
 
-          {/* Input Lokasi */}
           <div className="space-y-2">
             <label htmlFor="cityLocation" className="text-xs sm:text-sm font-semibold text-slate-700">
-              Kota / Kabupaten Domisili Usaha
+              {t.onboarding.cityLabel}
             </label>
             <input
               type="text"
               id="cityLocation"
               value={cityLocation}
               onChange={(e) => setCityLocation(e.target.value)}
-              placeholder="Contoh: Bandung, Surabaya, Medan, Solo"
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-bri-blue min-h-[44px]"
+              placeholder={t.onboarding.cityPlaceholder}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-brand-primary min-h-[44px]"
             />
             <p className="text-[11px] text-slate-500">
-              Lokasi membantu menentukan perkiraan biaya sewa tempat dan kebiasaan konsumen setempat.
+              {t.onboarding.cityHelper}
             </p>
           </div>
         </Card>
       )}
 
-      {/* STEP 2: Bidang Usaha yang Diminati */}
+      {/* STEP 2: Bidang Usaha */}
       {currentStep === 2 && (
         <Card className="p-6 sm:p-8 space-y-6">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                2. Bidang Usaha yang Anda Minati
+                {t.onboarding.step2Heading}
               </h2>
-              <span className="text-xs text-slate-500 font-medium">Bisa pilih lebih dari satu</span>
+              <span className="text-xs text-slate-500 font-medium">{t.onboarding.multiSelectNotice}</span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500">
-              Pilih bidang yang sesuai dengan keahlian atau kegemaran Anda sehari-hari.
+              {t.onboarding.step2Sub}
             </p>
           </div>
 
@@ -252,7 +263,7 @@ export default function OnboardingPage() {
                   onClick={() => toggleCategory(cat)}
                   className={`p-4 rounded-2xl border text-left flex items-start gap-4 transition-all min-h-[64px] ${
                     isSelected
-                      ? "border-bri-blue bg-blue-50/70 ring-2 ring-bri-blue/20"
+                      ? "border-brand-primary bg-brand-light ring-2 ring-brand-secondary/20"
                       : "border-slate-200 bg-white hover:border-slate-300"
                   }`}
                 >
@@ -266,7 +277,7 @@ export default function OnboardingPage() {
                       <div
                         className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
                           isSelected
-                            ? "bg-bri-blue border-bri-blue text-white"
+                            ? "bg-brand-primary border-brand-primary text-white"
                             : "border-slate-300 bg-white"
                         }`}
                       >
@@ -284,38 +295,36 @@ export default function OnboardingPage() {
         </Card>
       )}
 
-      {/* STEP 3: Modal & Kesiapan Pengalaman */}
+      {/* STEP 3: Modal & Pengalaman */}
       {currentStep === 3 && (
         <Card className="p-6 sm:p-8 space-y-6">
           <div className="space-y-2">
             <h2 className="text-base sm:text-lg font-bold text-slate-900">
-              3. Berapa Modal yang Anda Miliki Saat Ini?
+              {t.onboarding.step3Heading}
             </h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Masukkan tabungan atau dana mandiri yang siap dialokasikan tanpa mengganggu dana darurat keluarga.
+              {t.onboarding.step3Sub}
             </p>
           </div>
 
-          {/* Currency Input Modal */}
           <CurrencyInput
-            label="Kesiapan Anggaran Modal Awal"
+            label={t.onboarding.capitalLabel}
             value={availableCapital}
             onChange={(val) => setAvailableCapital(val)}
-            helperText="Paling sedikit Rp 1.000.000 untuk memulai simulasi peluang usaha."
+            helperText={t.onboarding.capitalHelper}
           />
 
-          {/* Quick presets for convenience */}
           <div className="space-y-1.5">
-            <span className="text-xs font-semibold text-slate-600">Pilihan Cepat:</span>
+            <span className="text-xs font-semibold text-slate-600">{t.onboarding.quickChoice}</span>
             <div className="flex flex-wrap gap-2">
               {[3000000, 5000000, 10000000, 20000000, 35000000].map((preset) => (
                 <button
                   key={preset}
                   type="button"
                   onClick={() => setAvailableCapital(preset)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${
                     availableCapital === preset
-                      ? "bg-bri-blue text-white border-bri-blue"
+                      ? "bg-brand-primary text-white border-brand-primary shadow-sm"
                       : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
                   }`}
                 >
@@ -325,16 +334,15 @@ export default function OnboardingPage() {
             </div>
           </div>
 
-          {/* Tingkat Pengalaman Usaha */}
           <div className="space-y-2 pt-2">
             <label className="text-xs sm:text-sm font-semibold text-slate-700">
-              Tingkat Pengalaman Berbisnis
+              {t.onboarding.experienceLabel}
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
-                { id: "pemula", title: "Pemula Total", desc: "Belum pernah jualan sebelumnya" },
-                { id: "pernah_usaha", title: "Pernah Berjualan", desc: "Pernah jualan kecil-kecilan / reseller" },
-                { id: "berpengalaman", title: "Berpengalaman", desc: "Sudah paham cara kelola stok & kas" },
+                { id: "pemula", title: t.onboarding.expBeginner, desc: t.onboarding.expBeginnerDesc },
+                { id: "pernah_usaha", title: t.onboarding.expSome, desc: t.onboarding.expSomeDesc },
+                { id: "berpengalaman", title: t.onboarding.expExperienced, desc: t.onboarding.expExperiencedDesc },
               ].map((item) => (
                 <button
                   key={item.id}
@@ -342,7 +350,7 @@ export default function OnboardingPage() {
                   onClick={() => setExperience(item.id as ExperienceLevel)}
                   className={`p-3.5 rounded-xl border text-left flex flex-col gap-1 transition-all ${
                     experience === item.id
-                      ? "border-bri-blue bg-blue-50/70 ring-2 ring-bri-blue/20"
+                      ? "border-brand-primary bg-brand-light ring-2 ring-brand-secondary/20"
                       : "border-slate-200 bg-white hover:border-slate-300"
                   }`}
                 >
@@ -353,15 +361,14 @@ export default function OnboardingPage() {
             </div>
           </div>
 
-          {/* Komitmen Waktu */}
           <div className="space-y-2 pt-2">
             <label className="text-xs sm:text-sm font-semibold text-slate-700">
-              Alokasi Waktu Menjalankan Usaha
+              {t.onboarding.timeCommitmentLabel}
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { id: "penuh_waktu", title: "Penuh Waktu (Full Time)", desc: "Fokus harian penuh sebagai mata pencaharian utama" },
-                { id: "sampingan", title: "Usaha Sampingan (Side Hustle)", desc: "Dijalankan sepulang kerja atau saat akhir pekan" },
+                { id: "penuh_waktu", title: t.onboarding.fullTime, desc: t.onboarding.fullTimeDesc },
+                { id: "sampingan", title: t.onboarding.partTime, desc: t.onboarding.partTimeDesc },
               ].map((item) => (
                 <button
                   key={item.id}
@@ -369,7 +376,7 @@ export default function OnboardingPage() {
                   onClick={() => setTimeCommitment(item.id as TimeCommitment)}
                   className={`p-3.5 rounded-xl border text-left flex flex-col gap-1 transition-all ${
                     timeCommitment === item.id
-                      ? "border-bri-blue bg-blue-50/70 ring-2 ring-bri-blue/20"
+                      ? "border-brand-primary bg-brand-light ring-2 ring-brand-secondary/20"
                       : "border-slate-200 bg-white hover:border-slate-300"
                   }`}
                 >
@@ -391,7 +398,7 @@ export default function OnboardingPage() {
             onClick={handlePrev}
             leftIcon={<ArrowLeft className="w-4 h-4" />}
           >
-            Kembali
+            {t.common.back}
           </Button>
         ) : (
           <div />
@@ -399,12 +406,12 @@ export default function OnboardingPage() {
 
         <Button
           type="button"
-          variant="orange"
+          variant="accent"
           size="lg"
           onClick={handleNext}
           rightIcon={<ArrowRight className="w-5 h-5" />}
         >
-          {currentStep === 3 ? "Temukan Peluang Usaha Saya" : "Lanjutkan"}
+          {currentStep === 3 ? t.onboarding.findOpportunityBtn : t.onboarding.nextBtn}
         </Button>
       </div>
     </div>

@@ -26,7 +26,7 @@ export function MetricCard({
     success: "bg-emerald-50/70 border-emerald-200 text-emerald-950",
     danger: "bg-red-50/70 border-red-200 text-red-950",
     warning: "bg-amber-50/70 border-amber-200 text-amber-950",
-    blue: "bg-blue-50/70 border-blue-200 text-blue-950",
+    blue: "bg-brand-light/80 border-brand-accent/50 text-brand-dark",
   };
 
   const valueColors = {
@@ -34,7 +34,7 @@ export function MetricCard({
     success: "text-emerald-700",
     danger: "text-red-600",
     warning: "text-amber-700",
-    blue: "text-bri-blue",
+    blue: "text-brand-primary",
   };
 
   return (

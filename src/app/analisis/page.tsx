@@ -26,6 +26,7 @@ import {
 import { BusinessOpportunity } from "@/types/business";
 import { FinancialAssumptions } from "@/types/finance";
 import { calculateFinancials, formatRupiah } from "@/core/finance/calculator";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function AnalisisPage() {
   const [opportunity, setOpportunity] = useState<BusinessOpportunity>(MOCK_OPPORTUNITIES[0]);
@@ -33,6 +34,7 @@ export default function AnalisisPage() {
     MOCK_OPPORTUNITIES[0].defaultAssumptions
   );
   const [saveNotification, setSaveNotification] = useState<string>("");
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const selected = getSelectedOpportunity();
@@ -47,7 +49,6 @@ export default function AnalisisPage() {
     }
   }, []);
 
-  // Hitung metrik keuangan secara seketika dan deterministik
   const result = useMemo(() => {
     return calculateFinancials(assumptions);
   }, [assumptions]);
@@ -55,13 +56,21 @@ export default function AnalisisPage() {
   const handleReset = () => {
     setAssumptions(opportunity.defaultAssumptions);
     saveCustomAssumptions(opportunity.id, opportunity.defaultAssumptions);
-    setSaveNotification("Asumsi telah dikembalikan ke standar awal bawaan.");
+    setSaveNotification(
+      language === "en"
+        ? "Assumptions have been reset to default values."
+        : "Asumsi telah dikembalikan ke standar awal bawaan."
+    );
     setTimeout(() => setSaveNotification(""), 3000);
   };
 
   const handleSave = () => {
     saveCustomAssumptions(opportunity.id, assumptions);
-    setSaveNotification("Asumsi kustom berhasil disimpan di browser Anda!");
+    setSaveNotification(
+      language === "en"
+        ? "Custom assumptions saved in your browser!"
+        : "Asumsi kustom berhasil disimpan di browser Anda!"
+    );
     setTimeout(() => setSaveNotification(""), 3000);
   };
 
@@ -80,7 +89,7 @@ export default function AnalisisPage() {
           <div className="flex items-center gap-2">
             <Link href="/rekomendasi">
               <Button size="sm" variant="secondary">
-                Ganti Pilihan Usaha
+                {t.analisis.changeChoice}
               </Button>
             </Link>
           </div>
@@ -88,10 +97,12 @@ export default function AnalisisPage() {
 
         <div className="space-y-1.5">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Kalkulator Kelayakan & Titik Impas (BEP)
+            {t.analisis.title}
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
-            Simulasi interaktif untuk <strong>{opportunity.title}</strong>. Geser slider atau ubah angka di bawah untuk melihat bagaimana perubahan harga dan biaya mempengaruhi keuntungan bersih Anda.
+            {language === "en" ? "Interactive simulation for " : "Simulasi interaktif untuk "}
+            <strong>{opportunity.title}</strong>.{" "}
+            {t.analisis.subtitle}
           </p>
         </div>
 
@@ -103,95 +114,93 @@ export default function AnalisisPage() {
         )}
       </div>
 
-      {/* 2. Grid Utama: Form Input Asumsi (Kiri) & Ringkasan Metrik (Kanan) */}
+      {/* 2. Grid Utama */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Kolom Kiri: Form Parameter Asumsi (5 Kolom di Desktop) */}
+        {/* Kolom Kiri: Form Parameter Asumsi */}
         <div className="lg:col-span-5 space-y-6">
           <Card className="p-5 sm:p-6 space-y-6 bg-white border-slate-200 shadow-sm">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Calculator className="w-4 h-4 text-bri-blue" />
-                Parameter Input Asumsi
+                <Calculator className="w-4 h-4 text-brand-primary" />
+                {t.analisis.inputTitle}
               </h2>
               <button
                 onClick={handleReset}
-                title="Kembalikan ke angka awal"
-                className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 font-medium"
+                title={t.analisis.resetTitle}
+                className="text-xs text-slate-500 hover:text-brand-primary flex items-center gap-1 font-semibold transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                Reset
+                {t.common.reset}
               </button>
             </div>
 
-            {/* Bagian A: Harga & HPP */}
+            {/* Bagian A */}
             <div className="space-y-4">
               <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                A. Harga & Modal Bahan (Unit)
+                {t.analisis.sectionA}
               </h3>
 
               <CurrencyInput
-                label="Harga Jual per Porsi / Barang"
+                label={t.analisis.sellingPrice}
                 value={assumptions.sellingPricePerUnit}
                 onChange={(val) =>
                   setAssumptions({ ...assumptions, sellingPricePerUnit: Math.max(100, val) })
                 }
-                helperText="Harga yang dibayar konsumen per satu unit."
               />
 
               <CurrencyInput
-                label="HPP / Biaya Bahan per Satuan"
+                label={t.analisis.costOfGoods}
                 value={assumptions.costOfGoodsPerUnit}
                 onChange={(val) =>
                   setAssumptions({ ...assumptions, costOfGoodsPerUnit: Math.max(0, val) })
                 }
-                helperText="Biaya bahan baku mentah + kemasan per porsi."
               />
 
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs flex justify-between items-center text-slate-700">
-                <span className="font-medium">Margin Kotor per Unit:</span>
-                <strong className={result.contributionMarginPerUnit > 0 ? "text-emerald-700" : "text-red-600"}>
+              <div className="p-3 rounded-xl bg-brand-light/70 border border-brand-accent/30 text-xs flex justify-between items-center text-slate-700">
+                <span className="font-medium">{t.analisis.grossMarginUnit}</span>
+                <strong className={result.contributionMarginPerUnit > 0 ? "text-emerald-700 font-bold" : "text-red-600 font-bold"}>
                   {formatRupiah(result.contributionMarginPerUnit)}
                 </strong>
               </div>
             </div>
 
-            {/* Bagian B: Volume & Hari Operasional */}
+            {/* Bagian B */}
             <div className="space-y-4 pt-2 border-t border-slate-100">
               <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                B. Target Penjualan Harian
+                {t.analisis.sectionB}
               </h3>
 
               <RangeSlider
-                label="Perkiraan Terjual per Hari"
+                label={t.analisis.dailyVolume}
                 value={assumptions.dailySalesVolume}
                 min={5}
                 max={250}
                 step={5}
-                formatValue={(val) => `${val} unit/hari`}
+                formatValue={(val) => `${val} unit/${language === "en" ? "day" : "hari"}`}
                 onChange={(val) => setAssumptions({ ...assumptions, dailySalesVolume: val })}
               />
 
               <RangeSlider
-                label="Hari Operasional per Bulan"
+                label={t.analisis.operatingDays}
                 value={assumptions.operatingDaysPerMonth}
                 min={15}
                 max={31}
                 step={1}
-                formatValue={(val) => `${val} hari`}
+                formatValue={(val) => `${val} ${language === "en" ? "days" : "hari"}`}
                 onChange={(val) =>
                   setAssumptions({ ...assumptions, operatingDaysPerMonth: val })
                 }
               />
             </div>
 
-            {/* Bagian C: Biaya Tetap Bulanan */}
+            {/* Bagian C */}
             <div className="space-y-4 pt-2 border-t border-slate-100">
               <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                C. Biaya Tetap Bulanan (Pasti Keluar)
+                {t.analisis.sectionC}
               </h3>
 
               <CurrencyInput
-                label="Sewa Tempat Bulanan"
+                label={t.analisis.rent}
                 value={assumptions.monthlyFixedCosts.rent}
                 onChange={(val) =>
                   setAssumptions({
@@ -202,7 +211,7 @@ export default function AnalisisPage() {
               />
 
               <CurrencyInput
-                label="Gaji Karyawan Bulanan"
+                label={t.analisis.salaries}
                 value={assumptions.monthlyFixedCosts.salaries}
                 onChange={(val) =>
                   setAssumptions({
@@ -210,11 +219,11 @@ export default function AnalisisPage() {
                     monthlyFixedCosts: { ...assumptions.monthlyFixedCosts, salaries: val },
                   })
                 }
-                helperText="Isi 0 jika usaha dioperasikan sendiri tanpa pegawai."
+                helperText={t.analisis.salariesHelper}
               />
 
               <CurrencyInput
-                label="Utilitas (Listrik, Air, Gas, Internet)"
+                label={t.analisis.utilities}
                 value={assumptions.monthlyFixedCosts.utilities}
                 onChange={(val) =>
                   setAssumptions({
@@ -225,7 +234,7 @@ export default function AnalisisPage() {
               />
 
               <CurrencyInput
-                label="Pemasaran & Biaya Lainnya"
+                label={t.analisis.marketing}
                 value={assumptions.monthlyFixedCosts.otherMarketing}
                 onChange={(val) =>
                   setAssumptions({
@@ -236,19 +245,18 @@ export default function AnalisisPage() {
               />
             </div>
 
-            {/* Bagian D: Modal Awal Alat */}
+            {/* Bagian D */}
             <div className="space-y-4 pt-2 border-t border-slate-100">
               <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                D. Investasi Awal Alat
+                {t.analisis.sectionD}
               </h3>
 
               <CurrencyInput
-                label="Modal Beli Alat / Mesin Awal"
+                label={t.analisis.initialEquipment}
                 value={assumptions.initialEquipmentCost}
                 onChange={(val) =>
                   setAssumptions({ ...assumptions, initialEquipmentCost: val })
                 }
-                helperText="Digunakan untuk menghitung estimasi waktu balik modal."
               />
             </div>
 
@@ -259,43 +267,43 @@ export default function AnalisisPage() {
               onClick={handleSave}
               leftIcon={<Save className="w-4 h-4" />}
             >
-              Simpan Asumsi Finansial Ini
+              {t.analisis.saveAssumptionsBtn}
             </Button>
           </Card>
         </div>
 
-        {/* Kolom Kanan: Tampilan Hasil Metrik Finansial & BEP (7 Kolom di Desktop) */}
+        {/* Kolom Kanan: Tampilan Hasil Metrik Finansial & BEP */}
         <div className="lg:col-span-7 space-y-6">
           {/* Status Keuntungan Utama */}
           <div
             className={`rounded-3xl p-6 sm:p-8 border shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${
               result.isProfitable
-                ? "bg-gradient-to-br from-emerald-500 to-teal-700 text-white border-emerald-600"
-                : "bg-gradient-to-br from-red-500 to-rose-700 text-white border-red-600"
+                ? "bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 text-white border-emerald-600 shadow-emerald-950/15"
+                : "bg-gradient-to-br from-red-600 via-rose-700 to-slate-900 text-white border-red-600 shadow-red-950/15"
             }`}
           >
             <div className="space-y-1">
               <span className="text-xs font-bold uppercase tracking-wider opacity-90">
-                {result.isProfitable ? "Proyeksi Untung Bersih Bulanan" : "Proyeksi Merugi"}
+                {result.isProfitable ? t.analisis.netProfitTitle : t.analisis.netLossTitle}
               </span>
               <div className="text-3xl sm:text-4xl font-black">
                 {formatRupiah(result.monthlyNetProfit)}
               </div>
               <p className="text-xs opacity-90">
                 {result.isProfitable
-                  ? `Margin keuntungan bersih ${result.netProfitMarginPercentage}% dari seluruh omzet.`
-                  : "Pengeluaran operasional lebih besar daripada pemasukan kotor."}
+                  ? `${t.analisis.netMarginText} ${result.netProfitMarginPercentage}%.`
+                  : t.analisis.lossText}
               </p>
             </div>
 
             <div className="bg-white/15 backdrop-blur-md rounded-2xl p-4 border border-white/20 text-center shrink-0 w-full sm:w-auto">
               <span className="text-[11px] font-semibold opacity-90 block">
-                Estimasi Balik Modal:
+                {t.analisis.paybackLabel}
               </span>
               <span className="text-xl sm:text-2xl font-black">
                 {result.isProfitable && result.estimatedPaybackMonths > 0
-                  ? `${result.estimatedPaybackMonths} Bulan`
-                  : "Belum Tercapai"}
+                  ? `${result.estimatedPaybackMonths} ${t.analisis.months}`
+                  : t.analisis.unreached}
               </span>
             </div>
           </div>
@@ -303,37 +311,34 @@ export default function AnalisisPage() {
           {/* Grid 4 Metrik Pokok */}
           <div className="grid grid-cols-2 gap-4">
             <MetricCard
-              title="Omzet Bulanan"
+              title={t.analisis.grossRevenue}
               value={formatRupiah(result.monthlyGrossRevenue)}
-              subtitle={`${assumptions.dailySalesVolume} unit x ${assumptions.operatingDaysPerMonth} hari`}
-              helperText="Total uang kas masuk dari hasil penjualan sebelum dipotong biaya apa pun."
+              subtitle={`${assumptions.dailySalesVolume} unit x ${assumptions.operatingDaysPerMonth} ${language === "en" ? "days" : "hari"}`}
             />
 
             <MetricCard
-              title="Total Pengeluaran"
+              title={t.analisis.totalCosts}
               value={formatRupiah(result.monthlyTotalCosts)}
               subtitle={`Tetap: ${formatRupiah(result.monthlyFixedCosts)}`}
-              helperText="Jumlah seluruh biaya tetap (sewa, gaji, listrik) ditambah biaya bahan baku."
             />
 
             <MetricCard
-              title="Titik Impas (BEP) Unit"
+              title={t.analisis.bepUnit}
               value={
                 Number.isFinite(result.bepUnitsPerDay)
-                  ? `${result.bepUnitsPerDay} unit / hari`
-                  : "Tidak tercapai"
+                  ? `${result.bepUnitsPerDay} unit / ${language === "en" ? "day" : "hari"}`
+                  : t.analisis.unreached
               }
               subtitle={
                 Number.isFinite(result.bepUnitsPerMonth)
-                  ? `Total ${result.bepUnitsPerMonth} unit per bulan`
-                  : "Margin bahan minus"
+                  ? `Total ${result.bepUnitsPerMonth} unit/${language === "en" ? "month" : "bulan"}`
+                  : "Margin minus"
               }
               variant={assumptions.dailySalesVolume >= result.bepUnitsPerDay ? "success" : "warning"}
-              helperText="Jumlah jualan minimal per hari agar usaha tidak tekor. Penjualan di atas angka ini adalah laba murni Anda."
             />
 
             <MetricCard
-              title="BEP Omzet Bulanan"
+              title={t.analisis.bepRevenue}
               value={
                 Number.isFinite(result.bepMonthlyRevenue)
                   ? formatRupiah(result.bepMonthlyRevenue)
@@ -341,7 +346,6 @@ export default function AnalisisPage() {
               }
               subtitle="Nilai omzet impas minimal"
               variant="blue"
-              helperText="Target omzet bulanan terendah yang wajib tercapai untuk menutup seluruh biaya tetap."
             />
           </div>
 
@@ -355,17 +359,17 @@ export default function AnalisisPage() {
             <Link href="/roadmap" className="w-full sm:w-auto">
               <Button
                 fullWidth
-                variant="orange"
+                variant="accent"
                 size="md"
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
-                Lanjut ke Roadmap Usaha
+                {t.analisis.proceedRoadmap}
               </Button>
             </Link>
 
             <Link href="/mantri" className="w-full sm:w-auto">
               <Button fullWidth variant="outline" size="md">
-                Edukasi & Konsultasi Mantri BRI
+                {t.analisis.consultMantri}
               </Button>
             </Link>
           </div>

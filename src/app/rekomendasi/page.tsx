@@ -20,6 +20,7 @@ import { matchOpportunities, OpportunityMatchResult } from "@/core/matching/matc
 import { getUserProfile } from "@/services/storageService";
 import { UserProfile } from "@/types/user";
 import { formatRupiah } from "@/core/finance/calculator";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function RekomendasiPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -28,6 +29,7 @@ export default function RekomendasiPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("semua");
   const [onlyAffordable, setOnlyAffordable] = useState<boolean>(false);
   const [selectedForModal, setSelectedForModal] = useState<OpportunityMatchResult | null>(null);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const user = getUserProfile();
@@ -40,11 +42,9 @@ export default function RekomendasiPage() {
     setIsLoading(false);
   }, []);
 
-  // Filter & match logic
   const matchResults = useMemo(() => {
     let opportunities = MOCK_OPPORTUNITIES;
 
-    // Filter kategori jika bukan "semua"
     if (selectedCategory !== "semua") {
       opportunities = opportunities.filter((o) => o.category === selectedCategory);
     }
@@ -59,11 +59,11 @@ export default function RekomendasiPage() {
   }, [profile, selectedCategory, searchQuery, onlyAffordable]);
 
   const categories = [
-    { id: "semua", label: "Semua Kategori" },
-    { id: "kuliner", label: "Kuliner & Minuman" },
-    { id: "jasa", label: "Jasa & Servis" },
-    { id: "ritel", label: "Ritel & Toko" },
-    { id: "agribisnis", label: "Agribisnis" },
+    { id: "semua", label: language === "en" ? "All Categories" : "Semua Kategori" },
+    { id: "kuliner", label: language === "en" ? "Food & Drinks" : "Kuliner & Minuman" },
+    { id: "jasa", label: language === "en" ? "Services & Care" : "Jasa & Servis" },
+    { id: "ritel", label: language === "en" ? "Retail & Store" : "Ritel & Toko" },
+    { id: "agribisnis", label: language === "en" ? "Agribusiness" : "Agribisnis" },
   ];
 
   return (
@@ -72,30 +72,35 @@ export default function RekomendasiPage() {
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="inline-flex items-center gap-2">
-            <Badge variant="blue">Rekomendasi Cerdas</Badge>
+            <Badge variant="blue">{t.rekomendasi.badge}</Badge>
             <SimulationBadge showExplanation />
           </div>
 
           <Link href="/onboarding">
             <Button size="sm" variant="outline">
-              {profile ? "Sesuaikan Ulang Profil" : "Isi Profil Saya"}
+              {profile ? t.rekomendasi.adjustProfileBtn : t.rekomendasi.fillProfileBtn}
             </Button>
           </Link>
         </div>
 
         <div className="space-y-2">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Peluang Usaha Terpilih untuk Anda
+            {t.rekomendasi.title}
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
             {profile ? (
               <>
-                Disesuaikan untuk lokasi <strong>{profile.cityLocation}</strong> dengan kesiapan anggaran{" "}
-                <span className="text-bri-blue font-bold">{formatRupiah(profile.availableCapital)}</span>{" "}
-                pada tingkat pengalaman <strong>{profile.experience}</strong>.
+                {language === "en" ? "Tailored for " : "Disesuaikan untuk lokasi "}
+                <strong>{profile.cityLocation}</strong>{" "}
+                {language === "en" ? "with an available budget of " : "dengan kesiapan anggaran "}
+                <span className="text-brand-primary font-bold">{formatRupiah(profile.availableCapital)}</span>{" "}
+                {language === "en" ? "at experience level " : "pada tingkat pengalaman "}
+                <strong>{profile.experience}</strong>.
               </>
             ) : (
-              "Pilihan peluang usaha mikro potensial di Indonesia yang telah dilengkapi model perhitungan finansial awal."
+              language === "en"
+                ? "Potential micro-enterprise opportunities in Indonesia complete with initial financial projection models."
+                : "Pilihan peluang usaha mikro potensial di Indonesia yang telah dilengkapi model perhitungan finansial awal."
             )}
           </p>
         </div>
@@ -111,8 +116,8 @@ export default function RekomendasiPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari ide usaha (contoh: tahu, kopi, laundry, sembako)..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-bri-blue min-h-[44px]"
+              placeholder={t.rekomendasi.searchPlaceholder}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-accent/50 focus:border-brand-primary min-h-[44px]"
             />
           </div>
 
@@ -123,9 +128,11 @@ export default function RekomendasiPage() {
                 type="checkbox"
                 checked={onlyAffordable}
                 onChange={(e) => setOnlyAffordable(e.target.checked)}
-                className="w-4 h-4 rounded text-bri-blue focus:ring-blue-200 cursor-pointer"
+                className="w-4 h-4 rounded text-brand-primary focus:ring-brand-primary cursor-pointer"
               />
-              <span>Hanya Sesuai Modal ({formatRupiah(profile.availableCapital)})</span>
+              <span>
+                {t.rekomendasi.onlyAffordable} ({formatRupiah(profile.availableCapital)})
+              </span>
             </label>
           )}
         </div>
@@ -138,7 +145,7 @@ export default function RekomendasiPage() {
               onClick={() => setSelectedCategory(cat.id)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
                 selectedCategory === cat.id
-                  ? "bg-bri-blue text-white shadow-sm font-semibold"
+                  ? "bg-brand-primary text-white shadow-sm font-semibold"
                   : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
@@ -159,9 +166,11 @@ export default function RekomendasiPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span>
-              Menampilkan <strong>{matchResults.length}</strong> peluang usaha yang cocok
+              {language === "en" ? "Showing " : "Menampilkan "}
+              <strong>{matchResults.length}</strong>{" "}
+              {language === "en" ? "matched opportunities" : "peluang usaha yang cocok"}
             </span>
-            <span>Diurutkan berdasarkan skor kesesuaian modal & minat</span>
+            <span>{language === "en" ? "Ranked by capital & preference score" : "Diurutkan berdasarkan skor kesesuaian modal & minat"}</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -176,9 +185,9 @@ export default function RekomendasiPage() {
         </div>
       ) : (
         <EmptyState
-          title="Tidak Ada Peluang yang Cocok dengan Kriteria Ini"
-          description="Coba bersihkan pencarian kata kunci atau nonaktifkan filter batas modal untuk melihat seluruh daftar opsi usaha."
-          actionLabel="Tampilkan Semua Usaha"
+          title={t.rekomendasi.emptyTitle}
+          description={t.rekomendasi.emptyDesc}
+          actionLabel={t.rekomendasi.showAllBtn}
           onAction={() => {
             setSearchQuery("");
             setSelectedCategory("semua");
@@ -206,8 +215,9 @@ export default function RekomendasiPage() {
               <button
                 onClick={() => setSelectedForModal(null)}
                 className="text-slate-400 hover:text-slate-700 text-sm font-bold p-1"
+                aria-label="Tutup modal"
               >
-                âœ•
+                ✕
               </button>
             </div>
 
@@ -216,26 +226,26 @@ export default function RekomendasiPage() {
             </p>
 
             {/* Rincian Asumsi Standar */}
-            <div className="rounded-2xl bg-blue-50/70 border border-blue-200 p-4 space-y-2 text-xs">
-              <h4 className="font-bold text-bri-blue text-sm flex items-center gap-1.5">
-                <Coins className="w-4 h-4" />
-                Asumsi Finansial Dasar (Dapat Diubah Nanti):
+            <div className="rounded-2xl bg-brand-light/80 border border-brand-accent/40 p-4 space-y-2 text-xs">
+              <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5">
+                <Coins className="w-4 h-4 text-brand-secondary" />
+                {language === "en" ? "Initial Financial Assumptions:" : "Asumsi Finansial Dasar (Dapat Diubah Nanti):"}
               </h4>
               <div className="grid grid-cols-2 gap-2 text-slate-700">
                 <div>
-                  <span className="text-slate-500">Harga Jual Unit:</span>{" "}
+                  <span className="text-slate-500">{t.analisis.sellingPrice}:</span>{" "}
                   <strong>{formatRupiah(selectedForModal.opportunity.defaultAssumptions.sellingPricePerUnit)}</strong>
                 </div>
                 <div>
-                  <span className="text-slate-500">HPP / Modal Bahan:</span>{" "}
+                  <span className="text-slate-500">{t.analisis.costOfGoods}:</span>{" "}
                   <strong>{formatRupiah(selectedForModal.opportunity.defaultAssumptions.costOfGoodsPerUnit)}</strong>
                 </div>
                 <div>
-                  <span className="text-slate-500">Target Harian:</span>{" "}
-                  <strong>{selectedForModal.opportunity.defaultAssumptions.dailySalesVolume} unit/hari</strong>
+                  <span className="text-slate-500">{t.analisis.dailyVolume}:</span>{" "}
+                  <strong>{selectedForModal.opportunity.defaultAssumptions.dailySalesVolume} unit</strong>
                 </div>
                 <div>
-                  <span className="text-slate-500">Modal Alat Awal:</span>{" "}
+                  <span className="text-slate-500">{t.analisis.initialEquipment}:</span>{" "}
                   <strong>{formatRupiah(selectedForModal.opportunity.defaultAssumptions.initialEquipmentCost)}</strong>
                 </div>
               </div>
@@ -243,7 +253,9 @@ export default function RekomendasiPage() {
 
             {/* Checklist Langkah Awal */}
             <div className="space-y-2">
-              <h4 className="font-bold text-slate-900 text-sm">Contoh Langkah di Roadmap:</h4>
+              <h4 className="font-bold text-slate-900 text-sm">
+                {language === "en" ? "Starter Roadmap Steps:" : "Contoh Langkah di Roadmap:"}
+              </h4>
               <div className="space-y-1.5">
                 {selectedForModal.opportunity.roadmapTemplates.slice(0, 3).map((step) => (
                   <div key={step.id} className="flex items-start gap-2 text-xs text-slate-600">
@@ -263,22 +275,18 @@ export default function RekomendasiPage() {
                 onClick={() => setSelectedForModal(null)}
                 className="w-full sm:w-auto"
               >
-                Tutup
+                {t.common.close}
               </Button>
-              <Button
-                variant="orange"
-                size="md"
-                rightIcon={<ArrowRight className="w-4 h-4" />}
-                onClick={() => {
-                  alert(
-                    "Pilihan tersimpan di perangkat Anda! Pada iterasi berikutnya, fitur kalkulator finansial interaktif dan roadmap lengkap akan terhubung ke data pilihan ini."
-                  );
-                  setSelectedForModal(null);
-                }}
-                className="w-full sm:w-auto"
-              >
-                Lanjutkan Rencana Ini
-              </Button>
+              <Link href="/analisis" className="w-full sm:w-auto">
+                <Button
+                  variant="accent"
+                  size="md"
+                  rightIcon={<ArrowRight className="w-4 h-4" />}
+                  className="w-full"
+                >
+                  {t.rekomendasi.selectAndAnalyze}
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

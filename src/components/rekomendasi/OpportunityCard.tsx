@@ -11,6 +11,7 @@ import { SimulationBadge } from "@/components/ui/SimulationBadge";
 import { OpportunityMatchResult } from "@/core/matching/matcher";
 import { formatRupiah } from "@/core/finance/calculator";
 import { saveSelectedOpportunity } from "@/services/storageService";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface OpportunityCardProps {
   result: OpportunityMatchResult;
@@ -19,6 +20,7 @@ interface OpportunityCardProps {
 
 export function OpportunityCard({ result, onSelect }: OpportunityCardProps) {
   const { opportunity, matchScore, matchReasons, isAffordable } = result;
+  const { t } = useLanguage();
 
   const handleSelect = () => {
     saveSelectedOpportunity(opportunity);
@@ -42,11 +44,11 @@ export function OpportunityCard({ result, onSelect }: OpportunityCardProps) {
               matchScore >= 80
                 ? "bg-emerald-50 text-emerald-800 border border-emerald-300"
                 : matchScore >= 60
-                ? "bg-blue-50 text-bri-blue border border-blue-300"
+                ? "bg-brand-light text-brand-primary border border-brand-accent/60"
                 : "bg-slate-100 text-slate-700 border border-slate-300"
             }`}
           >
-            {matchScore}% Cocok
+            {matchScore}% {t.rekomendasi.matchScore}
           </span>
         </div>
 
@@ -61,13 +63,13 @@ export function OpportunityCard({ result, onSelect }: OpportunityCardProps) {
         </div>
 
         {/* Modal Info Box */}
-        <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 space-y-1">
+        <div className="rounded-xl bg-brand-light/60 border border-brand-accent/30 p-3.5 space-y-1">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-500 flex items-center gap-1.5 font-medium">
-              <Coins className="w-4 h-4 text-amber-600" />
-              Estimasi Kebutuhan Modal:
+            <span className="text-slate-600 flex items-center gap-1.5 font-medium">
+              <Coins className="w-4 h-4 text-brand-secondary" />
+              {t.rekomendasi.estCapital}
             </span>
-            <span className="font-bold text-slate-900">
+            <span className="font-bold text-brand-primary">
               {formatRupiah(opportunity.estimatedMinCapital)} -{" "}
               {formatRupiah(opportunity.estimatedMaxCapital)}
             </span>
@@ -75,7 +77,7 @@ export function OpportunityCard({ result, onSelect }: OpportunityCardProps) {
 
           {!isAffordable && (
             <p className="text-[11px] text-amber-700 font-medium pt-1">
-              * Di atas anggaran awal Anda, dapat dipertimbangkan setelah modal bertambah.
+              {t.rekomendasi.capitalExceeded}
             </p>
           )}
         </div>
@@ -85,7 +87,7 @@ export function OpportunityCard({ result, onSelect }: OpportunityCardProps) {
           <div className="space-y-1 pt-1">
             <span className="text-xs font-semibold text-slate-700 flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              Alasan Rekomendasi:
+              {t.rekomendasi.whyMatch}
             </span>
             <ul className="text-xs text-slate-600 space-y-1 pl-5 list-disc leading-relaxed">
               {matchReasons.slice(0, 2).map((reason, idx) => (
@@ -100,7 +102,7 @@ export function OpportunityCard({ result, onSelect }: OpportunityCardProps) {
           <div className="space-y-1 pt-1">
             <span className="text-xs font-semibold text-slate-700 flex items-center gap-1">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-              Risiko yang Perlu Diantisipasi:
+              {t.rekomendasi.risks}
             </span>
             <p className="text-xs text-slate-600 leading-relaxed italic bg-amber-50/50 p-2.5 rounded-lg border border-amber-200/50">
               &ldquo;{opportunity.keyRisks[0]}&rdquo;
@@ -121,17 +123,18 @@ export function OpportunityCard({ result, onSelect }: OpportunityCardProps) {
         </div>
       </CardContent>
 
-      {/* Action Footer */}
+      {/* Action Footer dengan Palet Baru */}
       <div className="p-5 sm:p-6 pt-0 border-t border-slate-100 bg-slate-50/50 mt-4 flex items-center justify-between gap-3">
         <span className="text-[11px] text-slate-500 font-medium">
-          Tingkat: <span className="font-semibold text-slate-700">{opportunity.difficultyLevel}</span>
+          {t.rekomendasi.difficulty}{" "}
+          <span className="font-semibold text-slate-700">{opportunity.difficultyLevel}</span>
         </span>
 
         <button
           onClick={handleSelect}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-bri-blue hover:bg-bri-blue-hover transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-brand-primary hover:bg-brand-secondary transition-colors shadow-sm shadow-blue-900/15"
         >
-          <span>Pilih & Analisis</span>
+          <span>{t.rekomendasi.selectAndAnalyze}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>

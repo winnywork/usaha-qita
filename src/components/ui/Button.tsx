@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "orange" | "outline" | "ghost";
+  variant?: "primary" | "secondary" | "accent" | "orange" | "outline" | "ghost" | "sky";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   fullWidth?: boolean;
@@ -31,13 +31,17 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary:
-        "bg-bri-blue text-white hover:bg-bri-blue-hover focus:ring-bri-blue shadow-sm shadow-blue-900/10",
+        "bg-brand-primary text-white hover:bg-brand-secondary focus:ring-brand-primary shadow-sm shadow-blue-900/15",
       secondary:
         "bg-slate-100 text-slate-800 hover:bg-slate-200 focus:ring-slate-400 border border-slate-200",
-      orange:
-        "bg-bri-orange text-white hover:bg-bri-orange-dark focus:ring-bri-orange shadow-sm shadow-orange-900/10",
+      accent:
+        "bg-brand-secondary text-white hover:bg-brand-primary focus:ring-brand-secondary shadow-sm shadow-blue-600/20",
+      orange: // Alias untuk backward compatibility, sekarang menggunakan brand-secondary (#307FE3) yang dinamis
+        "bg-brand-secondary text-white hover:bg-brand-primary focus:ring-brand-secondary shadow-sm shadow-blue-600/20",
+      sky:
+        "bg-brand-accent text-slate-900 hover:bg-brand-secondary hover:text-white focus:ring-brand-accent shadow-sm",
       outline:
-        "bg-transparent text-bri-blue border-2 border-bri-blue hover:bg-bri-blue-light focus:ring-bri-blue",
+        "bg-transparent text-brand-primary border-2 border-brand-primary hover:bg-brand-light focus:ring-brand-primary",
       ghost:
         "bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus:ring-slate-300",
     };

@@ -2,12 +2,14 @@ import React from "react";
 import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 import { FinancialAssumptions } from "@/types/finance";
 import { calculateFinancials, applyScenario, formatRupiah } from "@/core/finance/calculator";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface ScenarioComparisonProps {
   baseAssumptions: FinancialAssumptions;
 }
 
 export function ScenarioComparison({ baseAssumptions }: ScenarioComparisonProps) {
+  const { t, language } = useLanguage();
   const conservativeAssumptions = applyScenario(baseAssumptions, "konservatif");
   const moderateAssumptions = applyScenario(baseAssumptions, "moderat");
   const aggressiveAssumptions = applyScenario(baseAssumptions, "agresif");
@@ -19,8 +21,8 @@ export function ScenarioComparison({ baseAssumptions }: ScenarioComparisonProps)
   const scenarios = [
     {
       id: "konservatif",
-      name: "Skenario Konservatif (Lesu)",
-      description: "Penjualan turun 30% dari target normal (misal cuaca buruk / awal merintis)",
+      name: language === "en" ? "Conservative (Slow)" : "Skenario Konservatif (Lesu)",
+      description: language === "en" ? "Sales drop 30% from target (bad weather or initial slow start)" : "Penjualan turun 30% dari target normal (misal cuaca buruk / awal merintis)",
       icon: <TrendingDown className="w-4 h-4 text-amber-600" />,
       dailyUnits: conservativeAssumptions.dailySalesVolume,
       result: conservativeResult,
@@ -29,18 +31,18 @@ export function ScenarioComparison({ baseAssumptions }: ScenarioComparisonProps)
     },
     {
       id: "moderat",
-      name: "Skenario Moderat (Normal)",
-      description: "Target penjualan harian yang realistis sesuai kapasitas operasional",
-      icon: <Minus className="w-4 h-4 text-bri-blue" />,
+      name: language === "en" ? "Moderate (Normal Target)" : "Skenario Moderat (Normal)",
+      description: language === "en" ? "Realistic target based on daily operating capacity" : "Target penjualan harian yang realistis sesuai kapasitas operasional",
+      icon: <Minus className="w-4 h-4 text-brand-primary" />,
       dailyUnits: moderateAssumptions.dailySalesVolume,
       result: moderateResult,
-      borderColor: "border-blue-200 ring-2 ring-blue-500/10",
-      bgColor: "bg-blue-50/50",
+      borderColor: "border-brand-primary ring-2 ring-brand-secondary/20",
+      bgColor: "bg-brand-light/80",
     },
     {
       id: "agresif",
-      name: "Skenario Agresif (Ramai)",
-      description: "Penjualan naik 30% saat musim ramai, akhir pekan, atau promosi efektif",
+      name: language === "en" ? "Aggressive (Peak Sales)" : "Skenario Agresif (Ramai)",
+      description: language === "en" ? "Sales surge 30% during weekends, holidays, or viral marketing" : "Penjualan naik 30% saat musim ramai, akhir pekan, atau promosi efektif",
       icon: <TrendingUp className="w-4 h-4 text-emerald-600" />,
       dailyUnits: aggressiveAssumptions.dailySalesVolume,
       result: aggressiveResult,
@@ -53,10 +55,12 @@ export function ScenarioComparison({ baseAssumptions }: ScenarioComparisonProps)
     <div className="space-y-4">
       <div className="space-y-1">
         <h3 className="text-base sm:text-lg font-bold text-slate-900">
-          Uji Ketahanan: Simulasi 3 Skenario Pasar
+          {language === "en" ? "Resilience Test: 3 Market Scenarios" : "Uji Ketahanan: Simulasi 3 Skenario Pasar"}
         </h3>
         <p className="text-xs sm:text-sm text-slate-500">
-          Ketahui apakah usaha Anda tetap menghasilkan keuntungan jika penjualan sedang sepi atau membludak.
+          {language === "en"
+            ? "Discover if your venture stays profitable during slow, average, or peak traffic days."
+            : "Ketahui apakah usaha Anda tetap menghasilkan keuntungan jika penjualan sedang sepi atau membludak."}
         </p>
       </div>
 
@@ -73,27 +77,30 @@ export function ScenarioComparison({ baseAssumptions }: ScenarioComparisonProps)
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">{sc.description}</p>
               <div className="pt-2 text-xs text-slate-700">
-                Target Terjual: <strong>{sc.dailyUnits} unit/hari</strong>
+                {language === "en" ? "Target Sold: " : "Target Terjual: "}
+                <strong>{sc.dailyUnits} unit/{language === "en" ? "day" : "hari"}</strong>
               </div>
             </div>
 
             <div className="pt-3 border-t border-slate-200/60 space-y-2 text-xs">
               <div className="flex justify-between items-center">
-                <span className="text-slate-500">Omzet Bulanan:</span>
+                <span className="text-slate-500">{t.analisis.grossRevenue}:</span>
                 <span className="font-semibold text-slate-900">
                   {formatRupiah(sc.result.monthlyGrossRevenue)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-slate-500">Total Pengeluaran:</span>
+                <span className="text-slate-500">{t.analisis.totalCosts}:</span>
                 <span className="text-slate-700">
                   {formatRupiah(sc.result.monthlyTotalCosts)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center pt-1 border-t border-slate-200/40">
-                <span className="font-bold text-slate-700">Laba Bersih:</span>
+                <span className="font-bold text-slate-700">
+                  {language === "en" ? "Net Profit:" : "Laba Bersih:"}
+                </span>
                 <span
                   className={`font-black text-sm ${
                     sc.result.isProfitable ? "text-emerald-700" : "text-red-600"
@@ -104,7 +111,7 @@ export function ScenarioComparison({ baseAssumptions }: ScenarioComparisonProps)
               </div>
 
               <div className="flex justify-between items-center text-[11px] text-slate-500">
-                <span>Margin Bersih:</span>
+                <span>{language === "en" ? "Net Margin:" : "Margin Bersih:"}</span>
                 <span className="font-semibold">
                   {sc.result.netProfitMarginPercentage}%
                 </span>

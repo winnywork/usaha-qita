@@ -166,3 +166,21 @@ Dokumen ini mendefinisikan kriteria kelayakan pengujian untuk setiap kebutuhan s
   - **Given**: Pengguna melihat istilah "BEP (Break-Even Point)" atau "HPP".
   - **When**: Pengguna mengarahkan kursor atau mengetuk ikon informasi di samping istilah tersebut.
   - **Then**: Muncul penjelasan singkat dalam bahasa sehari-hari (contoh: *"BEP adalah titik impas, yaitu jumlah jualan yang harus dicapai agar usahamu tidak tekor dan mulai untung"*).
+
+### AC-013: Pemilihan Bahasa (Bilingual Switcher ID/EN)
+- **Terkait**: REQ-015
+- **Skenario 1 (Peralihan ke Bahasa Inggris)**:
+  - **Given**: Pengguna berada di halaman mana pun dengan bahasa bawaan Bahasa Indonesia.
+  - **When**: Pengguna mengklik tombol pilihan bahasa dan memilih "English (US)".
+  - **Then**: Teks menu navigasi, tombol CTA, formulir onboarding, dan kalkulator langsung berganti ke bahasa Inggris tanpa perlu reload halaman penuh, dan pilihan bahasa tersimpan di `localStorage`.
+- **Skenario 2 (Ketahanan Bahasa Saat Refresh)**:
+  - **Given**: Pengguna telah memilih bahasa Inggris.
+  - **When**: Pengguna memuat ulang browser (*refresh*).
+  - **Then**: Aplikasi tetap tampil dalam bahasa Inggris.
+
+### AC-014: Penerapan Palet Warna Baru
+- **Terkait**: REQ-010
+- **Skenario 1 (Verifikasi Identitas Visual)**:
+  - **Given**: Pengguna membuka halaman aplikasi.
+  - **When**: Antarmuka ditampilkan.
+  - **Then**: Tema visual berlatar belakang putih bersih/slate-50, tombol dan elemen utama menggunakan warna `#0857C3`, elemen interaktif/hover menggunakan `#307FE3`, dan aksen sorotan lembut menggunakan `#71C5E8`.

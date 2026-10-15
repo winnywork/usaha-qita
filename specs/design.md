@@ -41,6 +41,13 @@ Sebagai mentor coding untuk pemula, berikut penjelasan arsitektur dalam bahasa y
 +-------------------------------------------------------------------+
 ```
 
+### 1.1 Palet Warna & Identitas Visual
+Aplikasi mengusung tema putih bersih, segar, dan profesional dengan palet warna terstandarisasi:
+1. **Warna Utama**: Putih Bersih (`#FFFFFF` & kanvas halus `slate-50` / `#F8FAFC`).
+2. **Warna Kedua (Primary Brand Blue)**: `#0857C3` (Biru elegan untuk tombol utama, navbar brand, dan heading kunci).
+3. **Warna Ketiga (Secondary Blue)**: `#307FE3` (Biru terang dinamis untuk aksen interaktif, hover effect, dan status aktif).
+4. **Warna Keempat (Accent Sky Blue)**: `#71C5E8` (Biru muda lembut untuk badge, latar belakang sorotan, dan elemen grafis halus).
+
 ### Mengapa Teknologi Ini Dipilih?
 1. **Next.js App Router**:
    - *Penjelasan Pemula*: Next.js membagi aplikasi menjadi dua bagian: apa yang diproses di komputer server (lebih aman dan cepat) dan apa yang berjalan di browser pengguna (interaktif).
