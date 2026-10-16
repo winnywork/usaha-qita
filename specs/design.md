@@ -306,3 +306,20 @@ Meskipun Gemini API akan diaktifkan pada fase berikutnya, arsitekturnya disiapka
 - Klien browser hanya memanggil API internal Next.js: `POST /api/ai/analyze`.
 - Server Next.js membaca `process.env.GEMINI_API_KEY`, memvalidasi payload request, dan memanggil layanan AI.
 - Jika API key tidak ada, endpoint server mengembalikan respons *graceful fallback* berbasis template analisis lokal tanpa menimbulkan error aplikasi (*crash*).
+
+---
+
+## 8. Arsitektur Mesin Rekomendasi Pasar Multidimensi (5 Sumber Data)
+
+### 8.1. Struktur Data `MarketIntelligence`
+Setiap peluang usaha dilengkapi entitas riset pasar 5 pilar:
+1. **Media Sosial (`socialMediaTrend`)**: Platform (TikTok, Instagram, X), skor viralitas (1-100), hashtag populer, dan ringkasan tren konsumsi.
+2. **Google Places & Lokasi (`googlePlaces`)**: Tingkat kepadatan kompetitor sejenis (Rendah/Sedang/Tinggi), radius kompetitor, estimasi foot-traffic, dan kecocokan tipe lingkungan.
+3. **Berita Ekonomi Lokal (`localNews`)**: Headline peristiwa bisnis daerah, sentra kuliner/UMKM baru, kebijakan promosi pemda, dan sentimen berita.
+4. **Google Trends (`googleTrends`)**: Skor Search Volume Index (0-100), laju pertumbuhan tren (+xx%), dan momentum pencarian 90 hari terakhir.
+5. **Statistik BPS (`bpsStats`)**: Data resmi konsumsi rumah tangga, rasio belanja per kapita, dan pertumbuhan PDRB sektor terkait di Indonesia.
+
+### 8.2. Alur Pengalaman Pengguna
+1. Di Onboarding (Langkah 1), pengguna menginput Kota (misal: "Bandung") + Area Spesifik (misal: "Sekitar Kampus ITB & Dago") + Tipe Karakteristik Lingkungan.
+2. Di Halaman Rekomendasi, kartu peluang usaha menampilkan skor kecocokan, ringkasan modal, serta tab/panel interaktif **"Dasar Analisis & Sumber Pasar (5 Sumber)"** dengan ikon visual masing-masing sumber.
+3. Klien atau server route AI dapat memperkaya analisis lokalitas secara dinamis saat Gemini API aktif.

@@ -69,6 +69,10 @@ Banyak calon wirausahawan pemula dan pelaku UMKM di Indonesia memiliki semangat 
 | **REQ-014** | Pemisahan Mock Data Terstruktur | Penyusunan dataset mock peluang usaha lokal Indonesia yang kaya dan terstruktur, dengan arsitektur service yang siap diganti API nyata di masa depan. | P0 (Wajib) |
 | **REQ-015** | Dukungan Multi-Bahasa (ID & EN) | Menyediakan fitur peralihan bahasa antara Bahasa Indonesia dan English (US) pada seluruh navigasi, formulir, kalkulator, dan konten edukasi dengan status bahasa yang persisten di browser. | P0 (Wajib) |
 | **REQ-016** | Integrasi Asisten Cerdas Gemini API & Analisis Prediktif | Mengintegrasikan Google Gemini API di server Next.js (/api/ai) untuk menghasilkan ringkasan eksekutif, potensi pertumbuhan, mitigasi risiko usaha, dan rekomendasi langkah aksi secara dwibahasa (ID/EN) dengan mekanisme graceful fallback offline tanpa membocorkan API key. | P0 (Fitur AI) |
+| **REQ-017** | Input Lokasi Spesifik & Karakteristik Area | Memperluas formulir onboarding untuk mengumpulkan area/kecamatan spesifik serta karakteristik lingkungan usaha (Kampus, Perkantoran, Perumahan, Pasar, Pinggir Jalan Utama) untuk analisis lokalitas yang presisi. | P0 (Wajib) |
+| **REQ-018** | Basis Data Riset Pasar Multidimensi 5 Sumber | Menyediakan dataset analisis tren yang terstruktur pada setiap peluang usaha dari 5 pilar riset: (1) Tren Media Sosial viral, (2) Kepadatan kompetitor Google Places, (3) Berita ekonomi lokal, (4) Google Trends search momentum, dan (5) Data konsumsi Badan Pusat Statistik (BPS). | P0 (Wajib) |
+| **REQ-019** | Visualisasi Sumber Riset pada Kartu Rekomendasi | Menampilkan panel interaktif "Dasar Analisis & Sumber Pasar" pada setiap kartu peluang usaha di halaman rekomendasi, sehingga pengguna mengetahui dasar data rekomendasi secara transparan dan berdasar. | P0 (Wajib) |
+| **REQ-020** | Sintesis Riset Kontekstual AI Gemini | Menghubungkan Google Gemini AI untuk mensintesis sinyal pasar lokal yang kontekstual secara live sesuai kota dan area spesifik yang diinputkan pengguna. | P1 (Fitur AI) |
 
 ---
 

@@ -208,3 +208,25 @@ Dokumen ini mendefinisikan kriteria kelayakan pengujian untuk setiap kebutuhan s
   - **Given**: Permintaan AI sedang diproses.
   - **When**: Pengguna menunggu respons.
   - **Then**: Ditampilkan skeleton loader dengan animasi halus tanpa pergeseran tata letak (layout shift), dan hasil yang telah di-generate disimpan sementara agar tidak perlu memanggil ulang jika parameter input belum berubah.
+
+
+---
+
+### AC-017: Input Lokasi Spesifik & Karakteristik Lingkungan Usaha
+- **Terkait**: REQ-017
+- **Skenario 1 (Pengisian Lokasi Spesifik di Onboarding)**:
+  - **Given**: Pengguna berada pada Langkah 1 Formulir Onboarding.
+  - **When**: Pengguna mengisi nama Kota dan mengisi kolom Area / Titik Spesifik (misal: "Sekitar Kampus ITB / Jl. Ganesha") serta memilih tipe area ("Kawasan Kampus & Mahasiswa").
+  - **Then**: Data tersimpan ke profil `localStorage` dan digunakan sebagai parameter kontekstual rekomendasi.
+
+### AC-018: Transparansi 5 Sumber Analisis Pasar pada Rekomendasi Peluang
+- **Terkait**: REQ-018, REQ-019
+- **Skenario 1 (Pemeriksaan 5 Sumber Riset Peluang Usaha)**:
+  - **Given**: Pengguna membuka halaman `/rekomendasi`.
+  - **When**: Pengguna melihat kartu peluang usaha (misalnya *Kedai Kopi Susu* atau *Booth Camilan Tahu Crispy*).
+  - **Then**: Tampil badge dan panel "Dasar Analisis & Sumber Pasar" yang memuat informasi dari 5 pilar:
+    1. **Media Sosial**: Tren platform, hashtag, dan tren produk viral.
+    2. **Google Places**: Estimasi kepadatan kompetitor sejenis dan potensi foot-traffic di lokasi target.
+    3. **Berita Lokal**: Cuplikan peristiwa bisnis & sentra usaha daerah.
+    4. **Google Trends**: Indeks volume pencarian (0-100) dan persentase pertumbuhan momentum.
+    5. **Statistik BPS**: Indikator makro/mikro pengeluaran konsumsi rumah tangga di sektor terkait.
