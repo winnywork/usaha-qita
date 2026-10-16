@@ -1,21 +1,34 @@
+export interface AiAnalysisPayload {
+  businessTitle: string;
+  userCapital: number;
+  monthlyGrossRevenue: number;
+  monthlyFixedCosts?: number;
+  monthlyVariableCosts?: number;
+  monthlyNetProfit: number;
+  netProfitMarginPercentage?: number;
+  bepUnitsPerDay?: number;
+  bepMonthlyRevenue?: number;
+  estimatedPaybackMonths?: number;
+  isProfitable: boolean;
+  language?: "id" | "en";
+}
+
 export interface AiAnalysisResponse {
-  source: string;
+  source: "gemini_api" | "local_template_engine";
   isAiActive: boolean;
   summary: string;
-  recommendations: string[];
+  strengths: string[];
+  risks: string[];
+  actionPlan: string[];
 }
 
 /**
  * Layanan pemanggil API server dari sisi browser.
- * Selalu memanggil /api/ai internal tanpa membawa rahasia atau API key.
+ * Selalu memanggil /api/ai internal di sisi server tanpa membawa rahasia atau API key.
  */
-export async function requestBusinessAnalysis(payload: {
-  businessTitle: string;
-  userCapital: number;
-  monthlyGrossRevenue: number;
-  monthlyNetProfit: number;
-  isProfitable: boolean;
-}): Promise<AiAnalysisResponse> {
+export async function requestBusinessAnalysis(
+  payload: AiAnalysisPayload
+): Promise<AiAnalysisResponse> {
   const response = await fetch("/api/ai", {
     method: "POST",
     headers: {

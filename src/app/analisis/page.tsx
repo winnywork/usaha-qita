@@ -17,6 +17,7 @@ import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { RangeSlider } from "@/components/ui/RangeSlider";
 import { MetricCard } from "@/components/analisis/MetricCard";
 import { ScenarioComparison } from "@/components/analisis/ScenarioComparison";
+import { AiAdvisorCard } from "@/components/analisis/AiAdvisorCard";
 import { MOCK_OPPORTUNITIES } from "@/data/opportunities";
 import {
   getSelectedOpportunity,
@@ -353,6 +354,21 @@ export default function AnalisisPage() {
           <Card className="p-5 sm:p-6 bg-white border-slate-200">
             <ScenarioComparison baseAssumptions={assumptions} />
           </Card>
+
+          {/* Asisten Cerdas Usaha Qita (Gemini AI Integration) */}
+          <AiAdvisorCard
+            businessTitle={opportunity.title}
+            userCapital={opportunity.estimatedMinCapital}
+            monthlyGrossRevenue={result.monthlyGrossRevenue}
+            monthlyFixedCosts={result.monthlyFixedCosts}
+            monthlyVariableCosts={result.monthlyVariableCosts}
+            monthlyNetProfit={result.monthlyNetProfit}
+            netProfitMarginPercentage={result.netProfitMarginPercentage}
+            bepUnitsPerDay={result.bepUnitsPerDay}
+            bepMonthlyRevenue={result.bepMonthlyRevenue}
+            estimatedPaybackMonths={result.estimatedPaybackMonths}
+            isProfitable={result.isProfitable}
+          />
 
           {/* Tautan Aksi Lanjutan */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
