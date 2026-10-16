@@ -73,6 +73,10 @@ Banyak calon wirausahawan pemula dan pelaku UMKM di Indonesia memiliki semangat 
 | **REQ-018** | Basis Data Riset Pasar Multidimensi 5 Sumber | Menyediakan dataset analisis tren yang terstruktur pada setiap peluang usaha dari 5 pilar riset: (1) Tren Media Sosial viral, (2) Kepadatan kompetitor Google Places, (3) Berita ekonomi lokal, (4) Google Trends search momentum, dan (5) Data konsumsi Badan Pusat Statistik (BPS). | P0 (Wajib) |
 | **REQ-019** | Visualisasi Sumber Riset pada Kartu Rekomendasi | Menampilkan panel interaktif "Dasar Analisis & Sumber Pasar" pada setiap kartu peluang usaha di halaman rekomendasi, sehingga pengguna mengetahui dasar data rekomendasi secara transparan dan berdasar. | P0 (Wajib) |
 | **REQ-020** | Sintesis Riset Kontekstual AI Gemini | Menghubungkan Google Gemini AI untuk mensintesis sinyal pasar lokal yang kontekstual secara live sesuai kota dan area spesifik yang diinputkan pengguna. | P1 (Fitur AI) |
+| **REQ-021** | Portal Login & Autentikasi Mantri BRI | Menyediakan antarmuka login resmi bagi Mantri BRI dengan kredensial Personal Number/NIP, Unit Kerja BRI, dan PIN Keamanan, lengkap dengan Quick Demo Login shortcut dan pelindung sesi (session guard). | P0 (Wajib Mantri) |
+| **REQ-022** | Dashboard Monitoring Pipeline Prospek Mantri | Menyediakan dashboard monitoring terpusat untuk memantau calon debitur mikro yang masuk, metrik KPI (Total Masuk, Layak, Butuh Survei, Potensi KUR), filter pipeline status, dan pencarian wilayah. | P0 (Wajib Mantri) |
+| **REQ-023** | Dossier Evaluasi Prospek & Asesmen Kredit Mikro | Menampilkan dossier lengkap profil calon pengusaha, lokasi spesifik, 5 sumber riset pasar, kalkulator kemampuan angsuran KUR (DSCR/Debt Service Coverage Ratio), catatan survei lapangan, dan tombol aksi direct WhatsApp. | P0 (Wajib Mantri) |
+| **REQ-024** | Progressive Auth & Sinkronisasi Dua Arah Antar Sisi | Mengimplementasikan progressive auth pada sisi calon pengusaha (verifikasi nama & WhatsApp saat pengiriman pengajuan) yang langsung tersinkronisasi secara real-time ke antrean dashboard Mantri di browser. | P0 (Wajib Integrasi) |
 
 ---
 

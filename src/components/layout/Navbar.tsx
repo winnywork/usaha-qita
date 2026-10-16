@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, Menu, X, ArrowRight, ShieldCheck } from "lucide-react";
+import { Compass, Menu, X, ArrowRight, ShieldCheck, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
@@ -12,6 +12,15 @@ export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useLanguage();
+
+  // If inside internal Mantri Portal routes, hide public navbar (they have their own bank-grade header)
+  if (
+    pathname.startsWith("/mantri/dashboard") ||
+    pathname.startsWith("/mantri/prospek") ||
+    pathname.startsWith("/mantri/login")
+  ) {
+    return null;
+  }
 
   const navLinks = [
     { href: "/", label: t.nav.beranda },
@@ -64,8 +73,18 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* Right Action / Language Switcher & CTA */}
+          {/* Right Action / Language Switcher & CTA & Mantri Portal Link */}
           <div className="hidden sm:flex items-center gap-2.5 shrink-0">
+            {/* Quick Access to Mantri Portal */}
+            <Link
+              href="/mantri/login"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold text-blue-900 bg-blue-50/90 hover:bg-blue-100 border border-blue-200/90 flex items-center gap-1.5 transition-colors shadow-2xs"
+              title="Akses Portal Monitoring Petugas Mantri BRI"
+            >
+              <Building2 className="w-3.5 h-3.5 text-blue-700" />
+              <span>Portal Mantri</span>
+            </Link>
+
             <LanguageSwitcher />
 
             <Link href="/onboarding">
@@ -77,6 +96,14 @@ export function Navbar() {
 
           {/* Mobile Right Bar: Language Switcher + Hamburger */}
           <div className="flex items-center gap-2 xl:hidden">
+            <Link
+              href="/mantri/login"
+              className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-blue-900 bg-blue-50 border border-blue-200 flex items-center gap-1"
+            >
+              <Building2 className="w-3 h-3 text-blue-700" />
+              <span>Mantri</span>
+            </Link>
+
             <LanguageSwitcher variant="compact" />
 
             <button
@@ -109,6 +136,16 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            {/* Mobile Link to Mantri Portal */}
+            <Link
+              href="/mantri/login"
+              onClick={() => setIsOpen(false)}
+              className="px-4 py-3 rounded-xl text-sm font-bold text-blue-950 bg-blue-50/80 border border-blue-200/80 flex items-center gap-2"
+            >
+              <Building2 className="w-4 h-4 text-blue-700" />
+              <span>Portal Khusus Mantri BRI (Login Petugas)</span>
+            </Link>
           </div>
 
           <div className="pt-2">

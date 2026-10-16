@@ -527,3 +527,5 @@ export const MOCK_OPPORTUNITIES: BusinessOpportunity[] = [
     tags: ["Agribisnis", "Hidroponik", "Gaya Hidup Sehat", "Urban Farming", "Berkelanjutan"],
   },
 ];
+
+export const businessOpportunities = MOCK_OPPORTUNITIES;

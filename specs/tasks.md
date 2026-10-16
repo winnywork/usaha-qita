@@ -103,3 +103,17 @@ Setiap tugas (*task*) di bawah ini terhubung langsung ke **Requirement ID (REQ-x
 | **TASK-032** | REQ-019, REQ-015 | **Komponen Antarmuka Sumber Riset Pasar (`MarketIntelligencePanel.tsx` & `OpportunityCard.tsx`)**<br>Membangun komponen panel interaktif di setiap kartu peluang yang menampilkan rincian data 5 pilar sumber riset beserta skor indeks tren dan terjemahan ID/EN. | TASK-031 | **DONE** |
 | **TASK-033** | REQ-020 | **Pembaruan Matching Engine & Integrasi Gemini AI Market Intelligence**<br>Menghubungkan matching engine dengan preferensi tipe lokasi dan menambahkan opsi sintesis pasar kontekstual via Gemini AI di server route. | TASK-032 | **DONE** |
 | **TASK-034** | REQ-017 s/d REQ-020 | **Verifikasi Komprehensif (Unit Test, Typecheck, Lint, Build)**<br>Membuat unit test untuk struktur 5 sinyal pasar, memverifikasi strict TypeScript, zero lint warning, dan production build. | TASK-033 | **DONE** |
+
+---
+
+## Fase 9: Portal & Monitoring Mantri BRI (Role-Based POV & Progressive Auth)
+
+| Task ID | Terkait REQ | Nama Tugas & Deskripsi | Dependensi | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **TASK-035** | REQ-021 s/d REQ-024 | **Pembaruan Dokumen Spesifikasi SDD untuk Fase 9**<br>Mendokumentasikan kebutuhan portal Mantri, arsitektur data pipeline prospek, dan mekanisme progressive auth di `requirements.md`, `design.md`, dan `tasks.md`. | TASK-034 | **DONE** |
+| **TASK-036** | REQ-021, REQ-024 | **Model Data, Mock Pipeline Service & Manajemen Sesi Mantri**<br>Membuat `src/types/mantri.ts` dan `src/services/mantriService.ts` untuk mengelola pipeline prospek calon nasabah, autentikasi sesi Mantri, dan sinkronisasi data real-time antar sisi. | TASK-035 | **DONE** |
+| **TASK-037** | REQ-021 | **Halaman Login Mantri BRI & Route Guard (`/mantri/login`)**<br>Membangun antarmuka autentikasi Mantri dengan NIP, Unit BRI, PIN, Quick Demo Login, serta pelindung rute dashboard bagi yang belum terautentikasi. | TASK-036 | **DONE** |
+| **TASK-038** | REQ-022 | **Dashboard Monitoring Pipeline Prospek Mantri (`/mantri/dashboard`)**<br>Membangun dashboard eksekutif Mantri lengkap dengan 4 metrik KPI utama, filter status pipeline (Baru Masuk s/d Realisasi KUR), pencarian, dan tabel daftar prospek. | TASK-037 | **DONE** |
+| **TASK-039** | REQ-023 | **Halaman Detail Dossier & Kalkulator Asesmen Kredit Mikro (`/mantri/prospek/[id]`)**<br>Membangun layar evaluasi prospek komprehensif (profil, 5 sumber pasar, BEP), kalkulator angsuran KUR vs laba (DSCR), formulir catatan survei, pembaruan status, dan direct WhatsApp. | TASK-038 | **DONE** |
+| **TASK-040** | REQ-024 | **Progressive Auth Sisi Calon Pengusaha & Integrasi Form Pengajuan (`/mantri`)**<br>Memperbarui formulir konsultasi calon pengusaha di `/mantri` dengan input nama & WhatsApp, pembuatan ID pengajuan unik, dan sinkronisasi instan ke antrean Mantri. | TASK-039 | **DONE** |
+| **TASK-041** | REQ-021 s/d REQ-024 | **Verifikasi Komprehensif (Unit Test, Typecheck, Lint, Build)**<br>Menulis unit test untuk kalkulasi kredit & service Mantri, memastikan 0 type error, 0 lint warning, dan production build stabil. | TASK-040 | **DONE** |

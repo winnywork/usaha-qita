@@ -323,3 +323,37 @@ Setiap peluang usaha dilengkapi entitas riset pasar 5 pilar:
 1. Di Onboarding (Langkah 1), pengguna menginput Kota (misal: "Bandung") + Area Spesifik (misal: "Sekitar Kampus ITB & Dago") + Tipe Karakteristik Lingkungan.
 2. Di Halaman Rekomendasi, kartu peluang usaha menampilkan skor kecocokan, ringkasan modal, serta tab/panel interaktif **"Dasar Analisis & Sumber Pasar (5 Sumber)"** dengan ikon visual masing-masing sumber.
 3. Klien atau server route AI dapat memperkaya analisis lokalitas secara dinamis saat Gemini API aktif.
+
+---
+
+## 9. Arsitektur Portal & Monitoring Mantri BRI (Role-Based POV)
+
+### 9.1. Konsep Aplikasi Terpadu (Single Application, Multi-Role Portal)
+Aplikasi UsahaQita berjalan pada 1 instance server tunggal (port 3000) yang melayani dua persona pengguna dengan arsitektur peran terpisah:
+1. **Calon Pengusaha Mikro (Publik)**: Menggunakan alur *Progressive Authentication*. Bebas mengeksplorasi ide, kalkulator, dan riset pasar tanpa akun, lalu melakukan registrasi/verifikasi ringan (Nama & No. WhatsApp) saat mengajukan permohonan konsultasi pendampingan ke Mantri BRI.
+2. **Mantri BRI (Internal/Bank-Grade)**: Wajib melewati portal autentikasi (`/mantri/login`) berbasis NIP, Unit Kerja BRI, dan PIN Keamanan. Dilengkapi *Quick Demo Login* untuk mempermudah evaluasi dan pengujian juri/stakeholder.
+
+### 9.2. Struktur Pipeline Prospek Calon Debitur
+Setiap permohonan konsultasi disimpan dengan entitas `ConsultationLead`:
+- **ID Pengajuan**: Format kode unik (contoh: `UQ-2026-001`).
+- **Data Calon Pengusaha**: Nama lengkap, kontak WhatsApp, kota, lokasi spesifik, dan tipe lingkungan.
+- **Rencana Usaha**: Judul peluang, modal awal tersedia, estimasi modal usaha, dan skor kecocokan matching engine.
+- **Dossier 5 Pilar Riset Pasar**: Nilai kepadatan Google Places, skor tren medsos, momentum Google Trends, berita lokal, dan data BPS.
+- **Simulasi Finansial**: Laba bersih bulanan, penjualan harian, titik impas (BEP), dan kebutuhan tambahan modal.
+- **Status Pipeline**:
+  - `BARU_MASUK` (Kuning): Pengajuan baru masuk dari formulir calon pengusaha.
+  - `KONTAK_PERTAMA` (Biru): Mantri telah menghubungi via WhatsApp/telepon.
+  - `SURVEI_LAPANGAN` (Ungu): Mantri menjadwalkan/melakukan survei fisik lokasi usaha.
+  - `REKOMENDASI_KUR` (Hijau): Usaha terverifikasi layak, rekomendasi plafon KUR diterbitkan.
+  - `BINA_MANDIRI` (Abu-abu): Usaha diarahkan untuk penguatan modal mandiri/pelatihan terlebih dahulu.
+
+### 9.3. Kalkulator Asesmen Kelayakan Kredit Mikro (Mantri Tool)
+Mantri dibekali kalkulator asesmen rasio pelunasan kredit (*Debt Service Coverage Ratio* / DSCR):
+- Plafon KUR Mikro: Pilihan Rp 10.000.000 s/d Rp 50.000.000.
+- Suku Bunga: Subsidi resmi KUR Mikro BRI (6% p.a. efektif).
+- Tenor: 12, 24, atau 36 bulan.
+- Rumus Angsuran Pokok & Bunga Bulanan: Standar perbankan anuitas/flat ekuivalen.
+- Rasio DSCR = (Estimasi Laba Bersih Bulanan) / (Angsuran Bulanan KUR).
+  - DSCR > 2.0x = Sangat Layak (*Strong Repayment Capacity*).
+  - DSCR 1.25x - 2.0x = Layak dengan Pemantauan.
+  - DSCR < 1.25x = Berisiko Tinggi (*High Risk / Perlu Restrukturisasi*).
