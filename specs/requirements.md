@@ -67,7 +67,8 @@ Banyak calon wirausahawan pemula dan pelaku UMKM di Indonesia memiliki semangat 
 | **REQ-012** | Arsitektur Fondasi AI (Gemini Ready) | Merancang antarmuka layanan (service interface) dan API Route di sisi server untuk integrasi Gemini API pada fase lanjutan tanpa membocorkan kunci rahasia (*zero client-side secrets*). | P1 (Desain Arsitektur) |
 | **REQ-013** | Aksesibilitas Dasar & Panduan Istilah | Memastikan rasio kontras teks memenuhi WCAG AA, tombol dapat diakses via keyboard (Tab/Enter), dan setiap istilah finansial (seperti BEP, HPP, Biaya Tetap) memiliki *tooltip* atau penjelasan bahasa awam. | P1 (Penting) |
 | **REQ-014** | Pemisahan Mock Data Terstruktur | Penyusunan dataset mock peluang usaha lokal Indonesia yang kaya dan terstruktur, dengan arsitektur service yang siap diganti API nyata di masa depan. | P0 (Wajib) |
-| **REQ-015** | Dukungan Multi-Bahasa (ID & EN) | Menyediakan fitur peralihan bahasa antara Bahasa Indonesia dan English (US) pada seluruh navigasi, formulir, kalkulator, dan konten edukasi dengan status bahasa yang persisten di browser. | P0 (Wajib) | Mock data peluang usaha dan simulasi pasar disimpan dalam modul tersendiri dengan tipe TypeScript yang ketat, terisolasi dari komponen visual. | P0 (Wajib) |
+| **REQ-015** | Dukungan Multi-Bahasa (ID & EN) | Menyediakan fitur peralihan bahasa antara Bahasa Indonesia dan English (US) pada seluruh navigasi, formulir, kalkulator, dan konten edukasi dengan status bahasa yang persisten di browser. | P0 (Wajib) |
+| **REQ-016** | Integrasi Asisten Cerdas Gemini API & Analisis Prediktif | Mengintegrasikan Google Gemini API di server Next.js (/api/ai) untuk menghasilkan ringkasan eksekutif, potensi pertumbuhan, mitigasi risiko usaha, dan rekomendasi langkah aksi secara dwibahasa (ID/EN) dengan mekanisme graceful fallback offline tanpa membocorkan API key. | P0 (Fitur AI) |
 
 ---
 

@@ -272,6 +272,34 @@ Antarmuka ditata menggunakan pendekatan *Mobile-First* dengan token Tailwind:
 ---
 
 ## 7. Batas Keamanan & Arsitektur AI (Security Boundary)
+### 7.1. Alur & Integrasi Gemini API
+1. **Server Route (`/api/ai/route.ts`)**:
+   - Membaca `GEMINI_API_KEY` dari environment server (`.env.local`).
+   - Menerima payload: `{ businessTitle, userCapital, monthlyGrossRevenue, monthlyNetProfit, isProfitable, bepUnitsPerDay, bepMonthlyRevenue, estimatedPaybackMonths, language }`.
+   - Mengirimkan request prompt terstruktur ke endpoint Google Gemini (`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`) dengan response schema JSON.
+   - Prompt menginstruksikan Gemini untuk bertindak sebagai Mentor Finansial Wirausaha Mikro & UMKM yang suportif, realistis, dan beretika.
+   - Format respons JSON:
+     ```json
+     {
+       "summary": "Ringkasan kondisi finansial dan kelayakan usaha...",
+       "strengths": ["Poin keunggulan dan potensi laba..."],
+       "risks": ["Potensi risiko operasional/pasar dan cara mengantisipasinya..."],
+       "actionPlan": ["Langkah taktis 1-3 yang perlu segera dilakukan..."]
+     }
+     ```
+2. **Graceful Fallback Offline**:
+   - Jika `GEMINI_API_KEY` tidak tersedia atau request ke Google mengalami kendala (kuota habis/jaringan terputus), server secara otomatis mengembalikan respons cerdas berbasis mesin templat deterministik lokal dengan penanda `source: "local_template_engine"` dan `isAiActive: false`.
+   - Hal ini menjamin aplikasi tidak pernah mengalami crash di sisi klien.
+
+3. **Komponen Antarmuka (`AiAdvisorCard.tsx`)**:
+   - Diletakkan di halaman `/analisis` di bawah kartu metrik utama.
+   - Menampilkan tombol "Minta Saran Asisten AI" / "Get AI Advisor Insights".
+   - Menampilkan status loading skeleton saat data diproses.
+   - Menampilkan badge status:
+     - Hijau/Sparkles: "Didukung oleh Gemini AI" jika live.
+     - Biru/Info: "Analisis Simulasi Cerdas (Offline Mode)" jika template lokal.
+   - Menyimpan hasil analisis sementara di `localStorage` berdasarkan ID usaha dan hash asumsi untuk mencegah pemanggilan berulang.
+
 
 Meskipun Gemini API akan diaktifkan pada fase berikutnya, arsitekturnya disiapkan sejak awal:
 - **Aturan Mutlak**: Kunci API `GEMINI_API_KEY` tidak boleh memiliki awalan `NEXT_PUBLIC_`.

@@ -184,3 +184,27 @@ Dokumen ini mendefinisikan kriteria kelayakan pengujian untuk setiap kebutuhan s
   - **Given**: Pengguna membuka halaman aplikasi.
   - **When**: Antarmuka ditampilkan.
   - **Then**: Tema visual berlatar belakang putih bersih/slate-50, tombol dan elemen utama menggunakan warna `#0857C3`, elemen interaktif/hover menggunakan `#307FE3`, dan aksen sorotan lembut menggunakan `#71C5E8`.
+
+---
+
+### AC-015: Analisis AI Gemini & Graceful Fallback
+- **Terkait**: REQ-016, NFR-002
+- **Skenario 1 (Analisis Menggunakan Gemini Live saat API Key Tersedia)**:
+  - **Given**: Pengguna telah mengisi parameter analisis usaha dan lingkungan server memiliki `GEMINI_API_KEY`.
+  - **When**: Pengguna menekan tombol "Minta Saran Asisten AI".
+  - **Then**: Server memanggil endpoint Gemini API, mengembalikan analisis terstruktur (ringkasan eksekutif, potensi pertumbuhan, mitigasi risiko, langkah taktis), dan UI menampilkan badge "Didukung oleh Gemini AI".
+- **Skenario 2 (Graceful Fallback saat Kunci Belum Tersedia atau Gagal Jaringan)**:
+  - **Given**: Lingkungan server tidak memiliki `GEMINI_API_KEY` atau koneksi ke Google API terputus.
+  - **When**: Pengguna menekan tombol "Minta Saran Asisten AI".
+  - **Then**: Aplikasi tidak crash, server secara otomatis mengembalikan analisis terstruktur berbasis template lokal deterministik, dan UI menampilkan badge "Analisis Simulasi Cerdas (Offline Mode)".
+
+### AC-016: Interaktivitas & Respons Bilingual Asisten AI
+- **Terkait**: REQ-016, REQ-015
+- **Skenario 1 (Pilihan Bahasa Aktif)**:
+  - **Given**: Pengguna sedang menggunakan mode bahasa Inggris (`en`).
+  - **When**: Pengguna meminta analisis AI.
+  - **Then**: Saran dan analisis dihasilkan dalam bahasa Inggris yang sesuai.
+- **Skenario 2 (Indikator Loading & Caching)**:
+  - **Given**: Permintaan AI sedang diproses.
+  - **When**: Pengguna menunggu respons.
+  - **Then**: Ditampilkan skeleton loader dengan animasi halus tanpa pergeseran tata letak (layout shift), dan hasil yang telah di-generate disimpan sementara agar tidak perlu memanggil ulang jika parameter input belum berubah.

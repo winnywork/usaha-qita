@@ -1,6 +1,6 @@
 # Rencana Kerja & Daftar Tugas (Task List)
 ## Proyek: Usaha Qita — powered by BRI
-**Status Keseluruhan**: Seluruh Alur Utama MVP Selesai & Terverifikasi  
+**Status Keseluruhan**: Fase 7 (Integrasi Asisten Cerdas Gemini AI) Sedang Berjalan  
 **Versi**: 1.2.0  
 **Tanggal Pembaruan**: 15 Oktober 2026  
 
@@ -76,3 +76,15 @@ Setiap tugas (*task*) di bawah ini terhubung langsung ke **Requirement ID (REQ-x
 | **TASK-020** | REQ-010 | **Pengujian Tata Letak Responsif Komprehensif**<br>Memastikan seluruh halaman rapi dan fungsional di resolusi 360px, 390px, 768px, dan 1440px tanpa overflow horizontal. | TASK-012 s/d TASK-018 | **DONE** |
 | **TASK-021** | REQ-011, REQ-013 | **Audit Aksesibilitas (A11y) & Panduan Istilah Finansial**<br>Memeriksa kontras warna, atribut label formulir, serta penjelasan ramah pemula untuk istilah finansial (HPP, BEP, Biaya Tetap). | TASK-020 | **DONE** |
 | **TASK-022** | NFR-001, NFR-003 | **Dokumentasi Panduan Setup Lokal & Lingkungan WSL**<br>Membuat `README.md` ramah pemula yang menjelaskan cara menjalankan aplikasi di terminal WSL Ubuntu langkah-demi-langkah. | TASK-001 s/d TASK-021 | **DONE** |
+
+---
+
+## Fase 7: Integrasi Asisten Cerdas Gemini AI & Analisis Prediktif
+
+| Task ID | Terkait REQ | Nama Tugas & Deskripsi | Dependensi | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **TASK-023** | REQ-016 | **Pembaruan Dokumen Spesifikasi SDD untuk Fase 7 (Gemini AI)**<br>Memperbarui `requirements.md`, `design.md`, `tasks.md`, dan `acceptance-criteria.md` dengan spesifikasi alur Gemini API, arsitektur prompt, graceful fallback, dan UI interaktif. | TASK-022 | **DONE** |
+| **TASK-024** | REQ-016, NFR-002 | **Implementasi Server Route Handler Gemini API (`/api/ai`)**<br>Memperbarui `src/app/api/ai/route.ts` dengan panggilan REST API Gemini (`gemini-1.5-flash`), prompt system kewirausahaan mikro, parsing JSON terstruktur, dan graceful fallback otomatis bila API key belum disetel/gagal. | TASK-023 | **TODO** |
+| **TASK-025** | REQ-016, REQ-015 | **Pembaruan Layanan Client `aiService.ts` & Kamus Terjemahan ID/EN**<br>Menyempurnakan `src/services/aiService.ts` dengan interface respons komprehensif (summary, strengths, risks, actionPlan, source) dan menambahkan string teks terjemahan UI asisten AI di `src/i18n/translations.ts`. | TASK-024 | **TODO** |
+| **TASK-026** | REQ-016, REQ-011 | **Komponen Antarmuka Asisten Cerdas `AiAdvisorCard.tsx`**<br>Membangun komponen `AiAdvisorCard` dengan tombol pemicu analisis, skeleton loader elegan, penanda status model (Gemini vs Template Lokal), tampilan kartu saran terstruktur, dan caching di LocalStorage. | TASK-025 | **TODO** |
+| **TASK-027** | REQ-016, REQ-010 | **Integrasi `AiAdvisorCard` ke Halaman Analisis Finansial & Verifikasi E2E**<br>Memasang `AiAdvisorCard` pada `src/app/analisis/page.tsx`, memastikan integrasi responsif, respons bilingual, serta verifikasi build dan unit test. | TASK-026 | **TODO** |
