@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String          @id @default(cuid())
+  name             String
+  email            String?         @unique
+  phone            String?
+  city             String?
+  specificLocation String?
+  locationType     String?
+  availableCapital Float           @default(0)
+  riskTolerance    String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  leads            Lead[]
+  financialPlans   FinancialPlan[]
+
+  @@map("users")
+}
+
+model BusinessOpportunity {
+  id                   String   @id
+  title                String
+  slug                 String   @unique
+  category             String
+  description          String   @db.Text
+  estimatedMinCapital  Float
+  targetMarket         String
+  locationEnvironments String   @db.Text
+  financialTemplate    String   @db.Text
+  marketIntelligence   String   @db.Text
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  leads                Lead[]
+
+  @@map("business_opportunities")
+}
+
+model Lead {
+  id                     String               @id
+  submittedAt            DateTime             @default(now())
+  applicantName          String
+  applicantPhone         String
+  preferredContactTime   String
+  city                   String
+  specificLocation       String
+  locationEnvironment    String
+  businessTitle          String
+  businessCategory       String
+  availableCapital       Float
+  estimatedTotalCapital  Float
+  capitalDeficit         Float
+  matchScore             Int
+  marketIntelligenceJson String               @db.Text
+  financialMetricsJson   String               @db.Text
+  status                 String               @default("BARU_MASUK")
+  assignedMantriId       String?
+  surveyNotes            String?              @db.Text
+  creditAssessmentJson   String?              @db.Text
+  lastUpdated            DateTime             @default(now()) @updatedAt
+  userId                 String?
+  opportunityId          String?
+  user                   User?                @relation(fields: [userId], references: [id])
+  opportunity            BusinessOpportunity? @relation(fields: [opportunityId], references: [id])
+  mantri                 Mantri?              @relation(fields: [assignedMantriId], references: [id])
+
+  @@index([status])
+  @@index([assignedMantriId])
+  @@map("leads")
+}
+
+model Mantri {
+  id             String   @id
+  name           String
+  personalNumber String   @unique
+  pin            String
+  unitName       String
+  branchOffice   String
+  role           String   @default("MANTRI")
+  assignedAreas  String   @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  leads          Lead[]
+
+  @@map("mantri_users")
+}
+
+model FinancialPlan {
+  id                   String   @id @default(cuid())
+  userId               String?
+  businessTitle        String
+  sellingPrice         Float
+  dailyVolume          Int
+  monthlyGrossRevenue  Float
+  monthlyFixedCosts    Float
+  monthlyVariableCosts Float
+  monthlyNetProfit     Float
+  bepUnitsPerDay       Int
+  bepRupiahPerMonth    Float
+  paybackMonths        Float
+  isProfitable         Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  user                 User?    @relation(fields: [userId], references: [id])
+
+  @@map("financial_plans")
+}

@@ -1,3 +1,4 @@
+import { MarketIntelligence } from "@/types/business";
 import { ConsultationLead, CreditSimulation, MantriUser, PipelineStatus } from "@/types/mantri";
 import { businessOpportunities } from "@/data/opportunities";
 
@@ -234,7 +235,107 @@ export function logoutMantri(): void {
   localStorage.removeItem(MANTRI_SESSION_KEY);
 }
 
-// 2. Leads Management
+
+export const DEFAULT_MARKET_INTELLIGENCE: MarketIntelligence = {
+  socialMediaTrend: {
+    platform: "TikTok & Instagram Reels",
+    trendScore: 85,
+    summary: "Minat tinggi di kalangan audiens dan konsumen lokal.",
+    hashtag: "#usahaqita",
+  },
+  googlePlaces: {
+    densityLevel: "Sedang",
+    competitorRadiusKm: 1.5,
+    footTrafficScore: "Tinggi",
+    summary: "Kawasan strategis dengan tingkat lalu lintas calon konsumen memadai.",
+  },
+  localNews: {
+    headline: "Pengembangan Sentra Usaha Mandiri Terus Bertumbuh",
+    source: "Ekonomi Mikro Jawa Timur",
+    summary: "Dukungan pembiayaan mikro dan pendampingan usaha memacu pertumbuhan unit usaha.",
+  },
+  googleTrends: {
+    searchVolumeIndex: 82,
+    growthRatePercentage: 20,
+    momentum: "Tumbuh Konsisten",
+    summary: "Tren pencarian kategori usaha stabil dan positif.",
+  },
+  bpsStats: {
+    metricName: "Indeks Daya Beli Konsumen",
+    metricValue: "Menengah ke Atas",
+    relevance: "Potensi belanja konsumen stabil pada kategori kebutuhan harian.",
+  },
+};
+
+export const DEFAULT_FINANCIAL_METRICS = {
+  dailyVolume: 35,
+  sellingPrice: 15000,
+  monthlyNetProfit: 4500000,
+  bepUnitsPerDay: 14,
+  bepRupiahPerMonth: 6300000,
+  paybackMonths: 2.5,
+};
+
+export function normalizeLead(lead: Record<string, unknown>): ConsultationLead {
+  const rawIntel = (lead?.marketIntelligence || {}) as Record<string, Record<string, unknown>>;
+  const rawMetrics = (lead?.financialMetrics || {}) as Record<string, unknown>;
+
+  const normalized = {
+    ...lead,
+    availableCapital: Number(lead?.availableCapital || 0),
+    estimatedTotalCapital: Number(lead?.estimatedTotalCapital || 0),
+    capitalDeficit: Number(lead?.capitalDeficit || 0),
+    matchScore: Number(lead?.matchScore || 85),
+    marketIntelligence: {
+      socialMediaTrend: {
+        ...DEFAULT_MARKET_INTELLIGENCE.socialMediaTrend,
+        ...(rawIntel.socialMediaTrend || {}),
+      },
+      googlePlaces: {
+        ...DEFAULT_MARKET_INTELLIGENCE.googlePlaces,
+        ...(rawIntel.googlePlaces || {}),
+      },
+      localNews: {
+        ...DEFAULT_MARKET_INTELLIGENCE.localNews,
+        ...(rawIntel.localNews || {}),
+      },
+      googleTrends: {
+        ...DEFAULT_MARKET_INTELLIGENCE.googleTrends,
+        ...(rawIntel.googleTrends || {}),
+      },
+      bpsStats: {
+        ...DEFAULT_MARKET_INTELLIGENCE.bpsStats,
+        ...(rawIntel.bpsStats || {}),
+      },
+    },
+    financialMetrics: {
+      ...DEFAULT_FINANCIAL_METRICS,
+      ...rawMetrics,
+    },
+  };
+
+  return normalized as unknown as ConsultationLead;
+}
+
+// 2. Leads Management (Synchronized with MySQL Database & Local Storage Fallback)
+
+export async function fetchLeadsFromDatabase(): Promise<ConsultationLead[]> {
+  if (typeof window === "undefined") return [];
+  try {
+    const res = await fetch("/api/leads", { cache: "no-store" });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        localStorage.setItem(MANTRI_LEADS_KEY, JSON.stringify(json.data));
+        const normalized = (json.data as Record<string, unknown>[]).map(normalizeLead); localStorage.setItem(MANTRI_LEADS_KEY, JSON.stringify(normalized)); return normalized;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not fetch leads from MySQL API, falling back to local storage:", err);
+  }
+  return getConsultationLeads();
+}
+
 export function getConsultationLeads(): ConsultationLead[] {
   if (typeof window === "undefined") return [];
   const raw = localStorage.getItem(MANTRI_LEADS_KEY);
@@ -244,7 +345,7 @@ export function getConsultationLeads(): ConsultationLead[] {
     return initial;
   }
   try {
-    return JSON.parse(raw) as ConsultationLead[];
+    return (JSON.parse(raw) as Record<string, unknown>[]).map(normalizeLead);
   } catch {
     const initial = getInitialMockLeads();
     localStorage.setItem(MANTRI_LEADS_KEY, JSON.stringify(initial));
@@ -255,6 +356,17 @@ export function getConsultationLeads(): ConsultationLead[] {
 export function getLeadById(id: string): ConsultationLead | undefined {
   const leads = getConsultationLeads();
   return leads.find((l) => l.id.toLowerCase() === id.toLowerCase());
+}
+
+export async function getLeadByIdAsync(id: string): Promise<ConsultationLead | undefined> {
+  const local = getLeadById(id);
+  if (typeof window === "undefined") return local;
+  try {
+    const leads = await fetchLeadsFromDatabase();
+    return leads.find((l) => l.id.toLowerCase() === id.toLowerCase()) || local;
+  } catch {
+    return local;
+  }
 }
 
 export function submitNewLead(
@@ -275,6 +387,12 @@ export function submitNewLead(
   const updatedLeads = [newLead, ...leads];
   if (typeof window !== "undefined") {
     localStorage.setItem(MANTRI_LEADS_KEY, JSON.stringify(updatedLeads));
+    // Asynchronous synchronization to MySQL database via API
+    fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newLead),
+    }).catch((err) => console.warn("Failed to sync new lead to MySQL:", err));
   }
   return newLead;
 }
@@ -301,6 +419,16 @@ export function updateLeadStatus(
   leads[index] = updated;
   if (typeof window !== "undefined") {
     localStorage.setItem(MANTRI_LEADS_KEY, JSON.stringify(leads));
+    // Asynchronous synchronization to MySQL database via API
+    fetch(`/api/leads/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status,
+        surveyNotes,
+        creditAssessment,
+      }),
+    }).catch((err) => console.warn("Failed to sync status update to MySQL:", err));
   }
   return updated;
 }

@@ -23,6 +23,7 @@ import {
   getCurrentMantri,
   logoutMantri,
   getConsultationLeads,
+  fetchLeadsFromDatabase,
   generateWhatsAppUrl,
 } from "@/services/mantriService";
 import { ConsultationLead, MantriUser, PipelineStatus } from "@/types/mantri";
@@ -45,6 +46,13 @@ export default function MantriDashboardPage() {
     setMantri(active);
     setLeads(getConsultationLeads());
     setIsReady(true);
+
+    // Sinkronisasi otomatis data terbaru dari database MySQL
+    fetchLeadsFromDatabase().then((dbLeads) => {
+      if (dbLeads && dbLeads.length > 0) {
+        setLeads(dbLeads);
+      }
+    });
   }, [router]);
 
   const handleLogout = () => {
@@ -389,13 +397,13 @@ export default function MantriDashboardPage() {
                       {/* Mini Badges 5 Sumber Riset */}
                       <div className="pt-2 flex flex-wrap items-center gap-1.5 text-[10px]">
                         <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                          Places: {lead.marketIntelligence.googlePlaces.densityLevel}
+                          Places: {lead.marketIntelligence?.googlePlaces?.densityLevel || "Sedang"}
                         </span>
                         <span className="px-2 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-200">
-                          Viral: {lead.marketIntelligence.socialMediaTrend.trendScore}/100
+                          Viral: {lead.marketIntelligence?.socialMediaTrend?.trendScore ?? 80}/100
                         </span>
                         <span className="px-2 py-0.5 rounded bg-blue-50 text-brand-primary border border-blue-200">
-                          Trends: +{lead.marketIntelligence.googleTrends.growthRatePercentage}%
+                          Trends: +{lead.marketIntelligence?.googleTrends?.growthRatePercentage ?? 15}%
                         </span>
                       </div>
                     </div>
@@ -411,7 +419,7 @@ export default function MantriDashboardPage() {
                       </div>
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-slate-500">Laba Bersih Est.:</span>
-                        <span className="font-bold text-emerald-700">{formatRupiah(lead.financialMetrics.monthlyNetProfit)}/bln</span>
+                        <span className="font-bold text-emerald-700">{formatRupiah(lead.financialMetrics?.monthlyNetProfit || 0)}/bln</span>
                       </div>
 
                       {lead.creditAssessment && (

@@ -1,0 +1,42 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: usahaqita_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: usahaqita_root_secret
+      MYSQL_DATABASE: usaha_qita
+      MYSQL_USER: usahaqita
+      MYSQL_PASSWORD: usahaqita_secret_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./prisma/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - usahaqita_net
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: usahaqita_web
+    restart: always
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=mysql://usahaqita:usahaqita_secret_password@db:3306/usaha_qita
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
+    networks:
+      - usahaqita_net
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  usahaqita_net:
+    driver: bridge

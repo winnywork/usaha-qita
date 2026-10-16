@@ -21,6 +21,7 @@ import { MarketIntelligencePanel } from "@/components/rekomendasi/MarketIntellig
 import {
   getCurrentMantri,
   getLeadById,
+  getLeadByIdAsync,
   updateLeadStatus,
   calculateKurAssessment,
   generateWhatsAppUrl,
@@ -69,6 +70,19 @@ export default function MantriProspekDetailPage({ params }: PageProps) {
       }
     }
     setIsReady(true);
+
+    // Ambil detail mutakhir langsung dari MySQL
+    getLeadByIdAsync(leadId).then((dbFound) => {
+      if (dbFound) {
+        setLead(dbFound);
+        setStatus(dbFound.status);
+        setSurveyNotes(dbFound.surveyNotes || "");
+        if (dbFound.creditAssessment) {
+          setLoanAmount(dbFound.creditAssessment.recommendedLoanAmount);
+          setTenorMonths(dbFound.creditAssessment.tenorMonths);
+        }
+      }
+    });
   }, [router, leadId]);
 
   if (!isReady || !mantri) {
@@ -105,7 +119,7 @@ export default function MantriProspekDetailPage({ params }: PageProps) {
   const currentAssessment = calculateKurAssessment(
     loanAmount,
     tenorMonths,
-    lead.financialMetrics.monthlyNetProfit
+    lead.financialMetrics?.monthlyNetProfit || 0
   );
 
   const handleSaveAssessment = (e: React.FormEvent) => {
@@ -271,7 +285,7 @@ export default function MantriProspekDetailPage({ params }: PageProps) {
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
                   <span className="text-[10px] text-slate-500 font-medium">Est. Laba Bersih</span>
                   <div className="text-xs sm:text-sm font-bold text-emerald-700">
-                    {formatRupiah(lead.financialMetrics.monthlyNetProfit)}/bln
+                    {formatRupiah(lead.financialMetrics?.monthlyNetProfit || 0)}/bln
                   </div>
                 </div>
               </div>
@@ -386,7 +400,7 @@ export default function MantriProspekDetailPage({ params }: PageProps) {
                     {currentAssessment.eligibilityGrade === "SANGAT_LAYAK" ? (
                       <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800">
                         <strong className="font-bold">STATUS: SANGAT LAYAK.</strong> Angsuran hanya menghabiskan{" "}
-                        {Math.round((currentAssessment.monthlyInstallment / lead.financialMetrics.monthlyNetProfit) * 100)}%
+                        {Math.round((currentAssessment.monthlyInstallment / lead.financialMetrics?.monthlyNetProfit || 0) * 100)}%
                         dari laba bulanan debitur.
                       </div>
                     ) : currentAssessment.eligibilityGrade === "LAYAK" ? (
