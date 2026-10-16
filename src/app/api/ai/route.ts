@@ -141,10 +141,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Panggilan live ke endpoint Google Gemini API (gemini-1.5-flash)
-    try {
-      const promptInstruction = isEnglish
-        ? `You are an expert MSME Financial Mentor for the Indonesian entrepreneurship education platform 'Usaha Qita — powered by BRI'.
+    const promptInstruction = isEnglish
+      ? `You are an expert MSME Financial Mentor for the Indonesian entrepreneurship education platform 'Usaha Qita — powered by BRI'.
 Analyze the provided business financial simulation data and provide actionable, encouraging, yet realistically grounded insights.
 Return ONLY a valid JSON object matching this schema without any markdown formatting, backticks, or outer wrapper:
 {
@@ -153,7 +151,7 @@ Return ONLY a valid JSON object matching this schema without any markdown format
   "risks": ["Practical operational or market risk 1", "Risk 2"],
   "actionPlan": ["Immediate tactical recommendation 1", "Recommendation 2", "Recommendation 3"]
 }`
-        : `Anda adalah Konsultan Finansial & Mentor Usaha Mikro & UMKM untuk platform edukasi 'Usaha Qita — powered by BRI'.
+      : `Anda adalah Konsultan Finansial & Mentor Usaha Mikro & UMKM untuk platform edukasi 'Usaha Qita — powered by BRI'.
 Tugas Anda adalah menganalisis data simulasi finansial usaha yang diberikan dan memberikan masukan yang praktis, realistis, empatik, serta aplikatif untuk calon pengusaha pemula di Indonesia.
 Berikan respons HANYA dalam format JSON valid sesuai skema berikut tanpa tanda petik markdown luar (tanpa \`\`\`json):
 {
@@ -163,7 +161,7 @@ Berikan respons HANYA dalam format JSON valid sesuai skema berikut tanpa tanda p
   "actionPlan": ["Langkah taktis konkret 1", "Langkah konkret 2", "Langkah konkret 3"]
 }`;
 
-      const userContent = `Data Simulasi Usaha:
+    const userContent = `Data Simulasi Usaha:
 - Nama Usaha: ${body.businessTitle || "Usaha Baru"}
 - Modal Awal Disiapkan: Rp ${(body.userCapital || 0).toLocaleString("id-ID")}
 - Proyeksi Omzet Bulanan: Rp ${(body.monthlyGrossRevenue || 0).toLocaleString("id-ID")}
@@ -175,58 +173,50 @@ Berikan respons HANYA dalam format JSON valid sesuai skema berikut tanpa tanda p
 - Estimasi Waktu Balik Modal: ${body.estimatedPaybackMonths || 0} bulan
 - Bahasa Respons: ${isEnglish ? "English" : "Bahasa Indonesia"}`;
 
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // Panggilan live ke Google Gemini API dengan model fallback multi-tier
+    const modelsToTry = ["gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.8-flash"];
+    let rawResultText: string | null = null;
 
-      const geminiRes = await fetch(geminiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: `${promptInstruction}\n\n${userContent}` }],
-            },
-          ],
-          generationConfig: {
-            responseMimeType: "application/json",
-            temperature: 0.3,
+    for (const modelName of modelsToTry) {
+      try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        const geminiRes = await fetch(geminiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        }),
-      });
-
-      if (!geminiRes.ok) {
-        console.warn(`Gemini API returned status ${geminiRes.status}. Using graceful fallback.`);
-        const fallback = getLocalTemplateResponse(body, isEnglish);
-        return NextResponse.json({
-          source: "local_template_engine",
-          isAiActive: false,
-          ...fallback,
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: `${promptInstruction}\n\n${userContent}` }],
+              },
+            ],
+            generationConfig: {
+              responseMimeType: "application/json",
+              temperature: 0.3,
+            },
+          }),
+          signal: AbortSignal.timeout(6000),
         });
+
+        if (geminiRes.ok) {
+          const geminiData = await geminiRes.json();
+          const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            rawResultText = text;
+            break; // Berhasil, keluar dari loop
+          }
+        } else {
+          console.warn(`Gemini model ${modelName} returned status ${geminiRes.status}. Trying next candidate.`);
+        }
+      } catch (err) {
+        console.warn(`Gemini model ${modelName} request error:`, err);
       }
+    }
 
-      const geminiData = await geminiRes.json();
-      const rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-      if (!rawText) {
-        throw new Error("Empty response parts from Gemini API");
-      }
-
-      // Bersihkan kemungkinan markdown code block jika ada
-      const cleaned = rawText.replace(/```json\s*/gi, "").replace(/```\s*$/gi, "").trim();
-      const parsed = JSON.parse(cleaned);
-
-      return NextResponse.json({
-        source: "gemini_api",
-        isAiActive: true,
-        summary: parsed.summary || "",
-        strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
-        risks: Array.isArray(parsed.risks) ? parsed.risks : [],
-        actionPlan: Array.isArray(parsed.actionPlan) ? parsed.actionPlan : [],
-      });
-    } catch (apiError) {
-      console.warn("Gemini call failed, utilizing local fallback engine:", apiError);
+    if (!rawResultText) {
+      console.warn("All live Gemini models unavailable. Using graceful local fallback.");
       const fallback = getLocalTemplateResponse(body, isEnglish);
       return NextResponse.json({
         source: "local_template_engine",
@@ -234,6 +224,19 @@ Berikan respons HANYA dalam format JSON valid sesuai skema berikut tanpa tanda p
         ...fallback,
       });
     }
+
+    // Bersihkan kemungkinan markdown code block jika ada
+    const cleaned = rawResultText.replace(/```json\s*/gi, "").replace(/```\s*$/gi, "").trim();
+    const parsed = JSON.parse(cleaned);
+
+    return NextResponse.json({
+      source: "gemini_api",
+      isAiActive: true,
+      summary: parsed.summary || "",
+      strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
+      risks: Array.isArray(parsed.risks) ? parsed.risks : [],
+      actionPlan: Array.isArray(parsed.actionPlan) ? parsed.actionPlan : [],
+    });
   } catch (error) {
     return NextResponse.json(
       { error: "Gagal memproses permintaan analisis AI.", details: String(error) },

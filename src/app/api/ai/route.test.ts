@@ -1,8 +1,23 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { POST } from "./route";
 import { NextRequest } from "next/server";
 
 describe("Batas Server AI Route Handler (/api/ai) (AC-015)", () => {
+  const originalKey = process.env.GEMINI_API_KEY;
+
+  beforeEach(() => {
+    // Pastikan environment bersih untuk pengujian offline fallback
+    delete process.env.GEMINI_API_KEY;
+  });
+
+  afterEach(() => {
+    if (originalKey !== undefined) {
+      process.env.GEMINI_API_KEY = originalKey;
+    } else {
+      delete process.env.GEMINI_API_KEY;
+    }
+  });
+
   it("mengembalikan respons template fallback terstruktur saat mode offline/tanpa API key (ID)", async () => {
     const payload = {
       businessTitle: "Kedai Kopi Susu Mantap",
@@ -97,4 +112,45 @@ describe("Batas Server AI Route Handler (/api/ai) (AC-015)", () => {
     expect(data.summary).toContain("defisit/rugi");
     expect(data.actionPlan[0]).toContain("Evaluasi harga jual");
   });
+
+  it(
+    "berhasil memproses panggilan live Gemini API saat GEMINI_API_KEY tersedia",
+    async () => {
+      // Pasang kunci yang valid untuk pengujian live
+      process.env.GEMINI_API_KEY = "AQ.Ab8RN6ICKheiprhPaFmOqsf4oohNhT84Q4CehvG5eYmv7crO7g";
+
+      const payload = {
+        businessTitle: "Kedai Kopi Susu Aren",
+        userCapital: 5000000,
+        monthlyGrossRevenue: 15000000,
+        monthlyFixedCosts: 3000000,
+        monthlyVariableCosts: 8000000,
+        monthlyNetProfit: 4000000,
+        netProfitMarginPercentage: 26.6,
+        bepUnitsPerDay: 20,
+        bepMonthlyRevenue: 6500000,
+        estimatedPaybackMonths: 1.25,
+        isProfitable: true,
+        language: "id" as const,
+      };
+
+      const req = new NextRequest("http://localhost:3000/api/ai", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const data = await res.json();
+      expect(data.isAiActive).toBe(true);
+      expect(data.source).toBe("gemini_api");
+      expect(typeof data.summary).toBe("string");
+      expect(data.summary.length).toBeGreaterThan(10);
+      expect(Array.isArray(data.strengths)).toBe(true);
+      expect(Array.isArray(data.risks)).toBe(true);
+      expect(Array.isArray(data.actionPlan)).toBe(true);
+    },
+    20000 // 20s timeout untuk live network call
+  );
 });
