@@ -444,7 +444,7 @@ export default function MantriDashboardPage() {
                   {/* Baris Aksi Bawah */}
                   <div className="pt-2 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <span className="text-[11px] text-slate-500">
-                      Terakhir diperbarui: {new Date(lead.lastUpdated).toLocaleDateString("id-ID", { dateStyle: "medium", timeStyle: "short" })}
+                      Terakhir diperbarui: {new Date(lead.lastUpdated).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }) }
                     </span>
 
                     <div className="flex items-center gap-2 w-full sm:w-auto">
