@@ -12,6 +12,9 @@ export interface AiAnalysisPayload {
   bepMonthlyRevenue?: number;
   estimatedPaybackMonths?: number;
   isProfitable: boolean;
+  cityLocation?: string;
+  specificLocation?: string;
+  locationEnvironment?: string;
   language?: "id" | "en";
 }
 
@@ -161,8 +164,11 @@ Berikan respons HANYA dalam format JSON valid sesuai skema berikut tanpa tanda p
   "actionPlan": ["Langkah taktis konkret 1", "Langkah konkret 2", "Langkah konkret 3"]
 }`;
 
-    const userContent = `Data Simulasi Usaha:
+    const userContent = `Data Simulasi Usaha & Konteks Lokasi:
 - Nama Usaha: ${body.businessTitle || "Usaha Baru"}
+- Kota Domisili: ${body.cityLocation || "Indonesia"}
+- Area / Titik Lokasi Spesifik: ${body.specificLocation || "Area strategis umum"}
+- Tipe Lingkungan Area: ${body.locationEnvironment || "Fleksibel"}
 - Modal Awal Disiapkan: Rp ${(body.userCapital || 0).toLocaleString("id-ID")}
 - Proyeksi Omzet Bulanan: Rp ${(body.monthlyGrossRevenue || 0).toLocaleString("id-ID")}
 - Total Biaya Tetap Bulanan: Rp ${(body.monthlyFixedCosts || 0).toLocaleString("id-ID")}

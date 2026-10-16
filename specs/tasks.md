@@ -1,6 +1,6 @@
 # Rencana Kerja & Daftar Tugas (Task List)
 ## Proyek: Usaha Qita — powered by BRI
-**Status Keseluruhan**: Fase 8 (Multi-Source Market Intelligence Engine) Sedang Berjalan  
+**Status Keseluruhan**: Seluruh Alur Fase 8 Selesai & Terverifikasi  
 **Versi**: 1.2.0  
 **Tanggal Pembaruan**: 15 Oktober 2026  
 
@@ -97,9 +97,9 @@ Setiap tugas (*task*) di bawah ini terhubung langsung ke **Requirement ID (REQ-x
 | Task ID | Terkait REQ | Nama Tugas & Deskripsi | Dependensi | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **TASK-028** | REQ-017 s/d REQ-020 | **Pembaruan Dokumen Spesifikasi SDD untuk Fase 8**<br>Memperbarui `requirements.md`, `design.md`, `tasks.md`, dan `acceptance-criteria.md` untuk mencakup 5 sumber sinyal pasar (Medsos, Google Places, Berita Lokal, Google Trends, BPS) dan input lokasi spesifik. | TASK-027 | **DONE** |
-| **TASK-029** | REQ-017, REQ-018 | **Perluasan Domain Model Types (`types/user.ts` & `types/business.ts`)**<br>Menambahkan field `specificLocation` dan `locationType` pada `UserProfile`, serta struktur `MarketIntelligence` (5 dimensi sinyal pasar) pada `BusinessOpportunity`. | TASK-028 | **TODO** |
-| **TASK-030** | REQ-017 | **Pembaruan Formulir Onboarding (`src/app/onboarding/page.tsx`)**<br>Menambahkan input lokasi spesifik (Kecamatan / Area Landmark) dan pemilih tipe lingkungan area (Kampus, Perkantoran, Perumahan, Pasar, dll.) pada Langkah 1 wizard profil. | TASK-029 | **TODO** |
-| **TASK-031** | REQ-018 | **Pengayaan Dataset Peluang Usaha (`src/data/opportunities.ts`)**<br>Melengkapi seluruh 6 ragam peluang usaha dengan data 5 sinyal pasar realistis (Tren Medsos, Google Places, Berita Ekonomi Lokal, Google Trends, dan BPS). | TASK-029 | **TODO** |
-| **TASK-032** | REQ-019, REQ-015 | **Komponen Antarmuka Sumber Riset Pasar (`MarketIntelligencePanel.tsx` & `OpportunityCard.tsx`)**<br>Membangun komponen panel interaktif di setiap kartu peluang yang menampilkan rincian data 5 pilar sumber riset beserta skor indeks tren dan terjemahan ID/EN. | TASK-031 | **TODO** |
-| **TASK-033** | REQ-020 | **Pembaruan Matching Engine & Integrasi Gemini AI Market Intelligence**<br>Menghubungkan matching engine dengan preferensi tipe lokasi dan menambahkan opsi sintesis pasar kontekstual via Gemini AI di server route. | TASK-032 | **TODO** |
-| **TASK-034** | REQ-017 s/d REQ-020 | **Verifikasi Komprehensif (Unit Test, Typecheck, Lint, Build)**<br>Membuat unit test untuk struktur 5 sinyal pasar, memverifikasi strict TypeScript, zero lint warning, dan production build. | TASK-033 | **TODO** |
+| **TASK-029** | REQ-017, REQ-018 | **Perluasan Domain Model Types (`types/user.ts` & `types/business.ts`)**<br>Menambahkan field `specificLocation` dan `locationType` pada `UserProfile`, serta struktur `MarketIntelligence` (5 dimensi sinyal pasar) pada `BusinessOpportunity`. | TASK-028 | **DONE** |
+| **TASK-030** | REQ-017 | **Pembaruan Formulir Onboarding (`src/app/onboarding/page.tsx`)**<br>Menambahkan input lokasi spesifik (Kecamatan / Area Landmark) dan pemilih tipe lingkungan area (Kampus, Perkantoran, Perumahan, Pasar, dll.) pada Langkah 1 wizard profil. | TASK-029 | **DONE** |
+| **TASK-031** | REQ-018 | **Pengayaan Dataset Peluang Usaha (`src/data/opportunities.ts`)**<br>Melengkapi seluruh 6 ragam peluang usaha dengan data 5 sinyal pasar realistis (Tren Medsos, Google Places, Berita Ekonomi Lokal, Google Trends, dan BPS). | TASK-029 | **DONE** |
+| **TASK-032** | REQ-019, REQ-015 | **Komponen Antarmuka Sumber Riset Pasar (`MarketIntelligencePanel.tsx` & `OpportunityCard.tsx`)**<br>Membangun komponen panel interaktif di setiap kartu peluang yang menampilkan rincian data 5 pilar sumber riset beserta skor indeks tren dan terjemahan ID/EN. | TASK-031 | **DONE** |
+| **TASK-033** | REQ-020 | **Pembaruan Matching Engine & Integrasi Gemini AI Market Intelligence**<br>Menghubungkan matching engine dengan preferensi tipe lokasi dan menambahkan opsi sintesis pasar kontekstual via Gemini AI di server route. | TASK-032 | **DONE** |
+| **TASK-034** | REQ-017 s/d REQ-020 | **Verifikasi Komprehensif (Unit Test, Typecheck, Lint, Build)**<br>Membuat unit test untuk struktur 5 sinyal pasar, memverifikasi strict TypeScript, zero lint warning, dan production build. | TASK-033 | **DONE** |

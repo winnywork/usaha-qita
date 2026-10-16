@@ -38,4 +38,53 @@ describe("Mesin Pencocokan Peluang Usaha (Matcher Engine)", () => {
     // Warung sembako butuh modal belasan juta
     expect(results[0].isAffordable).toBe(false);
   });
+
+  it("memiliki data MarketIntelligence lengkap 5 pilar pada setiap peluang usaha (AC-018)", () => {
+    MOCK_OPPORTUNITIES.forEach((opp) => {
+      expect(opp.marketIntelligence).toBeDefined();
+      const mi = opp.marketIntelligence!;
+
+      // 1. Sosial Media
+      expect(mi.socialMediaTrend.platform).toBeTruthy();
+      expect(mi.socialMediaTrend.trendScore).toBeGreaterThanOrEqual(1);
+      expect(mi.socialMediaTrend.summary).toBeTruthy();
+
+      // 2. Google Places
+      expect(["Rendah", "Sedang", "Tinggi"]).toContain(mi.googlePlaces.densityLevel);
+      expect(mi.googlePlaces.competitorRadiusKm).toBeGreaterThan(0);
+      expect(mi.googlePlaces.summary).toBeTruthy();
+
+      // 3. Berita Lokal
+      expect(mi.localNews.headline).toBeTruthy();
+      expect(mi.localNews.source).toBeTruthy();
+      expect(mi.localNews.summary).toBeTruthy();
+
+      // 4. Google Trends
+      expect(mi.googleTrends.searchVolumeIndex).toBeGreaterThanOrEqual(1);
+      expect(mi.googleTrends.growthRatePercentage).toBeGreaterThanOrEqual(0);
+      expect(mi.googleTrends.summary).toBeTruthy();
+
+      // 5. Statistik BPS
+      expect(mi.bpsStats.metricName).toBeTruthy();
+      expect(mi.bpsStats.metricValue).toBeTruthy();
+      expect(mi.bpsStats.relevance).toBeTruthy();
+    });
+  });
+
+  it("meningkatkan skor kecocokan saat karakteristik area target pengguna sesuai (AC-017)", () => {
+    const campusProfile: Partial<UserProfile> = {
+      availableCapital: 10000000,
+      categoryInterest: ["kuliner"],
+      locationEnvironment: "kampus",
+      specificLocation: "Dekat Kampus ITB & Jl. Dipati Ukur",
+    };
+
+    const results = matchOpportunities(MOCK_OPPORTUNITIES, campusProfile, "kopi");
+    expect(results.length).toBe(1);
+    const kopiMatch = results[0];
+    expect(kopiMatch.matchScore).toBeGreaterThanOrEqual(85);
+    expect(
+      kopiMatch.matchReasons.some((r) => r.includes("kampus") || r.includes("ITB"))
+    ).toBe(true);
+  });
 });

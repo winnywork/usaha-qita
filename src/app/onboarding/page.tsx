@@ -23,6 +23,7 @@ import {
   TargetGoal,
   ExperienceLevel,
   TimeCommitment,
+  LocationEnvironment,
   CATEGORY_LABELS,
 } from "@/types/user";
 import { getUserProfile, saveUserProfile } from "@/services/storageService";
@@ -44,6 +45,8 @@ export default function OnboardingPage() {
   // Form State
   const [targetGoal, setTargetGoal] = useState<TargetGoal>("mulai_baru");
   const [cityLocation, setCityLocation] = useState<string>("Jakarta");
+  const [specificLocation, setSpecificLocation] = useState<string>("");
+  const [locationEnvironment, setLocationEnvironment] = useState<LocationEnvironment>("fleksibel");
   const [categoryInterest, setCategoryInterest] = useState<BusinessCategory[]>(["kuliner"]);
   const [availableCapital, setAvailableCapital] = useState<number>(5000000);
   const [experience, setExperience] = useState<ExperienceLevel>("pemula");
@@ -57,6 +60,8 @@ export default function OnboardingPage() {
     if (existing) {
       if (existing.targetGoal) setTargetGoal(existing.targetGoal);
       if (existing.cityLocation) setCityLocation(existing.cityLocation);
+      if (existing.specificLocation) setSpecificLocation(existing.specificLocation);
+      if (existing.locationEnvironment) setLocationEnvironment(existing.locationEnvironment);
       if (existing.categoryInterest && existing.categoryInterest.length > 0)
         setCategoryInterest(existing.categoryInterest);
       if (existing.availableCapital) setAvailableCapital(existing.availableCapital);
@@ -120,6 +125,8 @@ export default function OnboardingPage() {
       const profile: UserProfile = {
         targetGoal,
         cityLocation: cityLocation.trim(),
+        specificLocation: specificLocation.trim(),
+        locationEnvironment,
         categoryInterest,
         availableCapital,
         experience,
@@ -232,6 +239,60 @@ export default function OnboardingPage() {
             <p className="text-[11px] text-slate-500">
               {t.onboarding.cityHelper}
             </p>
+          </div>
+
+          {/* Input Kecamatan / Titik Spesifik Lokasi */}
+          <div className="space-y-2 pt-2 border-t border-slate-100">
+            <label htmlFor="specificLocation" className="text-xs sm:text-sm font-semibold text-slate-700 flex items-center justify-between">
+              <span>{t.onboarding.specificLocationLabel}</span>
+              <span className="text-[11px] font-normal text-slate-400">({language === "en" ? "Optional" : "Opsional"})</span>
+            </label>
+            <input
+              type="text"
+              id="specificLocation"
+              value={specificLocation}
+              onChange={(e) => setSpecificLocation(e.target.value)}
+              placeholder={t.onboarding.specificLocationPlaceholder}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-brand-primary min-h-[44px]"
+            />
+            <p className="text-[11px] text-slate-500">
+              {t.onboarding.specificLocationHelper}
+            </p>
+          </div>
+
+          {/* Pemilihan Karakteristik Lingkungan Usaha */}
+          <div className="space-y-2.5 pt-2 border-t border-slate-100">
+            <label className="text-xs sm:text-sm font-semibold text-slate-700 block">
+              {t.onboarding.envLabel}
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {[
+                { id: "kampus", label: t.onboarding.envKampus },
+                { id: "perkantoran", label: t.onboarding.envPerkantoran },
+                { id: "perumahan", label: t.onboarding.envPerumahan },
+                { id: "pasar", label: t.onboarding.envPasar },
+                { id: "pinggir_jalan", label: t.onboarding.envPinggirJalan },
+                { id: "fleksibel", label: t.onboarding.envFleksibel },
+              ].map((item) => (
+                <button
+                  type="button"
+                  key={item.id}
+                  onClick={() => setLocationEnvironment(item.id as LocationEnvironment)}
+                  className={`p-3 rounded-xl border text-left text-xs font-medium transition-all ${
+                    locationEnvironment === item.id
+                      ? "border-brand-primary bg-blue-50/80 text-brand-primary font-bold shadow-sm ring-1 ring-brand-primary"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="leading-snug">{item.label}</span>
+                    {locationEnvironment === item.id && (
+                      <Check className="w-3.5 h-3.5 text-brand-primary shrink-0 ml-1" />
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         </Card>
       )}

@@ -10,6 +10,37 @@ export interface RoadmapStep {
   isCompleted?: boolean;
 }
 
+export interface MarketIntelligence {
+  socialMediaTrend: {
+    platform: string; // misal: "TikTok & Instagram Reels"
+    trendScore: number; // 0 - 100
+    summary: string;
+    hashtag: string;
+  };
+  googlePlaces: {
+    densityLevel: "Rendah" | "Sedang" | "Tinggi";
+    competitorRadiusKm: number;
+    footTrafficScore: "Tinggi" | "Sangat Tinggi" | "Menengah";
+    summary: string;
+  };
+  localNews: {
+    headline: string;
+    source: string;
+    summary: string;
+  };
+  googleTrends: {
+    searchVolumeIndex: number; // 0 - 100
+    growthRatePercentage: number; // misal: +54%
+    momentum: "Melesat Naik" | "Stabil Tinggi" | "Tumbuh Konsisten";
+    summary: string;
+  };
+  bpsStats: {
+    metricName: string;
+    metricValue: string;
+    relevance: string;
+  };
+}
+
 export interface BusinessOpportunity {
   id: string;
   title: string;
@@ -28,6 +59,7 @@ export interface BusinessOpportunity {
   defaultAssumptions: FinancialAssumptions;
   roadmapTemplates: RoadmapStep[];
   tags: string[];
+  marketIntelligence?: MarketIntelligence;
 }
 
 export interface OpportunityFilter {

@@ -1,9 +1,14 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import {
   ArrowRight,
   Coins,
   CheckCircle2,
   AlertTriangle,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -12,15 +17,24 @@ import { OpportunityMatchResult } from "@/core/matching/matcher";
 import { formatRupiah } from "@/core/finance/calculator";
 import { saveSelectedOpportunity } from "@/services/storageService";
 import { useLanguage } from "@/context/LanguageContext";
+import { MarketIntelligencePanel } from "@/components/rekomendasi/MarketIntelligencePanel";
 
 interface OpportunityCardProps {
   result: OpportunityMatchResult;
+  cityLocation?: string;
+  specificLocation?: string;
   onSelect?: () => void;
 }
 
-export function OpportunityCard({ result, onSelect }: OpportunityCardProps) {
+export function OpportunityCard({
+  result,
+  cityLocation,
+  specificLocation,
+  onSelect,
+}: OpportunityCardProps) {
   const { opportunity, matchScore, matchReasons, isAffordable } = result;
   const { t } = useLanguage();
+  const [showMarketIntel, setShowMarketIntel] = useState(false);
 
   const handleSelect = () => {
     saveSelectedOpportunity(opportunity);
@@ -90,7 +104,7 @@ export function OpportunityCard({ result, onSelect }: OpportunityCardProps) {
               {t.rekomendasi.whyMatch}
             </span>
             <ul className="text-xs text-slate-600 space-y-1 pl-5 list-disc leading-relaxed">
-              {matchReasons.slice(0, 2).map((reason, idx) => (
+              {matchReasons.slice(0, 3).map((reason, idx) => (
                 <li key={idx}>{reason}</li>
               ))}
             </ul>
@@ -121,6 +135,41 @@ export function OpportunityCard({ result, onSelect }: OpportunityCardProps) {
             </span>
           ))}
         </div>
+
+        {/* Tombol Panel Sumber Riset Pasar (5 Pilar) */}
+        {opportunity.marketIntelligence && (
+          <div className="pt-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowMarketIntel(!showMarketIntel)}
+              className="w-full flex items-center justify-between p-2.5 rounded-xl bg-blue-50/70 hover:bg-blue-100/70 border border-blue-200/80 text-brand-primary text-xs font-semibold transition-colors"
+            >
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-brand-secondary" />
+                <span>
+                  {showMarketIntel
+                    ? t.rekomendasi.marketIntelHide
+                    : t.rekomendasi.marketIntelButton}
+                </span>
+              </div>
+              {showMarketIntel ? (
+                <ChevronUp className="w-4 h-4 text-brand-secondary" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-brand-secondary" />
+              )}
+            </button>
+
+            {showMarketIntel && (
+              <div className="mt-3">
+                <MarketIntelligencePanel
+                  intelligence={opportunity.marketIntelligence}
+                  cityLocation={cityLocation}
+                  specificLocation={specificLocation}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
 
       {/* Action Footer dengan Palet Baru */}

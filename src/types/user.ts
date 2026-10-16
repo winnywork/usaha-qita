@@ -6,9 +6,20 @@ export type ExperienceLevel = "pemula" | "pernah_usaha" | "berpengalaman";
 
 export type TimeCommitment = "penuh_waktu" | "sampingan";
 
+export type LocationEnvironment =
+  | "kampus"
+  | "perkantoran"
+  | "perumahan"
+  | "pasar"
+  | "pusat_keramaian"
+  | "pinggir_jalan"
+  | "fleksibel";
+
 export interface UserProfile {
   targetGoal: TargetGoal;
   cityLocation: string;
+  specificLocation?: string; // misal: "Dekat Kampus ITB / Jl. Dipati Ukur"
+  locationEnvironment?: LocationEnvironment;
   categoryInterest: BusinessCategory[];
   availableCapital: number; // Dalam Rupiah, misal: 5000000
   experience: ExperienceLevel;

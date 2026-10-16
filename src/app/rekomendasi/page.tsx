@@ -9,6 +9,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { OpportunityCard } from "@/components/rekomendasi/OpportunityCard";
+import { MarketIntelligencePanel } from "@/components/rekomendasi/MarketIntelligencePanel";
 import { OpportunityCardSkeleton } from "@/components/feedback/LoadingSkeleton";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { SimulationBadge } from "@/components/ui/SimulationBadge";
@@ -178,6 +179,8 @@ export default function RekomendasiPage() {
               <OpportunityCard
                 key={result.opportunity.id}
                 result={result}
+                cityLocation={profile?.cityLocation}
+                specificLocation={profile?.specificLocation}
                 onSelect={() => setSelectedForModal(result)}
               />
             ))}
@@ -267,6 +270,17 @@ export default function RekomendasiPage() {
                 ))}
               </div>
             </div>
+
+            {/* Bukti Analisis Pasar (5 Sumber Riset) */}
+            {selectedForModal.opportunity.marketIntelligence && (
+              <div className="pt-2 border-t border-slate-100">
+                <MarketIntelligencePanel
+                  intelligence={selectedForModal.opportunity.marketIntelligence}
+                  cityLocation={profile?.cityLocation}
+                  specificLocation={profile?.specificLocation}
+                />
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-slate-100">
               <Button

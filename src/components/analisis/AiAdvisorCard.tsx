@@ -29,6 +29,9 @@ export interface AiAdvisorCardProps {
   bepMonthlyRevenue: number;
   estimatedPaybackMonths: number;
   isProfitable: boolean;
+  cityLocation?: string;
+  specificLocation?: string;
+  locationEnvironment?: string;
 }
 
 export function AiAdvisorCard({
@@ -43,6 +46,9 @@ export function AiAdvisorCard({
   bepMonthlyRevenue,
   estimatedPaybackMonths,
   isProfitable,
+  cityLocation,
+  specificLocation,
+  locationEnvironment,
 }: AiAdvisorCardProps) {
   const { t, language } = useLanguage();
   const [loading, setLoading] = useState(false);
@@ -84,6 +90,9 @@ export function AiAdvisorCard({
         bepMonthlyRevenue,
         estimatedPaybackMonths,
         isProfitable,
+        cityLocation,
+        specificLocation,
+        locationEnvironment,
         language,
       });
 

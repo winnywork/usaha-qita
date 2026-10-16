@@ -21,15 +21,18 @@ import { AiAdvisorCard } from "@/components/analisis/AiAdvisorCard";
 import { MOCK_OPPORTUNITIES } from "@/data/opportunities";
 import {
   getSelectedOpportunity,
+  getUserProfile,
   saveCustomAssumptions,
   getCustomAssumptions,
 } from "@/services/storageService";
 import { BusinessOpportunity } from "@/types/business";
+import { UserProfile } from "@/types/user";
 import { FinancialAssumptions } from "@/types/finance";
 import { calculateFinancials, formatRupiah } from "@/core/finance/calculator";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function AnalisisPage() {
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [opportunity, setOpportunity] = useState<BusinessOpportunity>(MOCK_OPPORTUNITIES[0]);
   const [assumptions, setAssumptions] = useState<FinancialAssumptions>(
     MOCK_OPPORTUNITIES[0].defaultAssumptions
@@ -38,6 +41,11 @@ export default function AnalisisPage() {
   const { t, language } = useLanguage();
 
   useEffect(() => {
+    const user = getUserProfile();
+    if (user) {
+      setUserProfile(user);
+    }
+
     const selected = getSelectedOpportunity();
     if (selected) {
       setOpportunity(selected);
@@ -368,6 +376,9 @@ export default function AnalisisPage() {
             bepMonthlyRevenue={result.bepMonthlyRevenue}
             estimatedPaybackMonths={result.estimatedPaybackMonths}
             isProfitable={result.isProfitable}
+            cityLocation={userProfile?.cityLocation}
+            specificLocation={userProfile?.specificLocation}
+            locationEnvironment={userProfile?.locationEnvironment}
           />
 
           {/* Tautan Aksi Lanjutan */}

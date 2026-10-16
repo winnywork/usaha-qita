@@ -10,6 +10,9 @@ export interface AiAnalysisPayload {
   bepMonthlyRevenue?: number;
   estimatedPaybackMonths?: number;
   isProfitable: boolean;
+  cityLocation?: string;
+  specificLocation?: string;
+  locationEnvironment?: string;
   language?: "id" | "en";
 }
 

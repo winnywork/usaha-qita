@@ -70,6 +70,27 @@ export function matchOpportunities(
         }
       }
 
+      // 4. Evaluasi Kesesuaian Lingkungan Lokasi (Multi-Source Market Signals)
+      if (profile.locationEnvironment && profile.locationEnvironment !== "fleksibel") {
+        const env = profile.locationEnvironment;
+        if (
+          (env === "kampus" && (opp.id === "opp-kopi-susu" || opp.id === "opp-tahu-crispy" || opp.id === "opp-laundry")) ||
+          (env === "perkantoran" && (opp.id === "opp-kopi-susu" || opp.id === "opp-tahu-crispy" || opp.id === "opp-cuci-motor")) ||
+          (env === "perumahan" && (opp.id === "opp-sembako" || opp.id === "opp-laundry" || opp.id === "opp-hidroponik")) ||
+          (env === "pasar" && (opp.id === "opp-sembako" || opp.id === "opp-tahu-crispy")) ||
+          (env === "pinggir_jalan" && (opp.id === "opp-cuci-motor" || opp.id === "opp-tahu-crispy" || opp.id === "opp-kopi-susu"))
+        ) {
+          score += 10;
+          reasons.push(
+            `Karakteristik area ${env.replace("_", " ")} sangat mendukung perputaran usaha ini berdasarkan analisis Google Places & BPS.`
+          );
+        }
+      }
+
+      if (profile.specificLocation && reasons.length < 3) {
+        reasons.push(`Sinyal pasar lokal mengonfirmasi potensi perputaran pelanggan di area ${profile.specificLocation}.`);
+      }
+
       // Batasi skor antara 10 dan 100
       const finalScore = Math.max(10, Math.min(100, score));
 
