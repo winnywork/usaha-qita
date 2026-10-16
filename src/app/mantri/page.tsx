@@ -117,21 +117,21 @@ export default function MantriPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 py-6 text-left">
       {/* Banner Akses Portal Mantri BRI (Untuk Petugas / Evaluator) */}
-      <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-brand-primary via-brand-primary to-brand-secondary border border-brand-primary/30 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0 shadow-xs">
             <Building2 className="w-5 h-5 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-wider text-blue-400">
+              <span className="text-[10px] font-black uppercase tracking-wider text-blue-100">
                 PORTAL RESMI BANK
               </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-semibold border border-blue-500/30">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-white font-semibold border border-white/30 backdrop-blur-xs">
                 POV Mantri BRI
               </span>
             </div>
-            <p className="text-xs text-slate-300 font-medium">
+            <p className="text-xs text-blue-50 font-medium">
               Apakah Anda petugas Mantri BRI? Akses Dashboard Pemantauan & Verifikasi Debitur.
             </p>
           </div>
@@ -139,7 +139,7 @@ export default function MantriPage() {
 
         <Link
           href="/mantri/login"
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition-colors shrink-0 shadow-sm"
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-blue-50 text-brand-primary transition-colors shrink-0 shadow-sm"
         >
           <Lock className="w-3.5 h-3.5" />
           <span>Login Mantri BRI</span>
