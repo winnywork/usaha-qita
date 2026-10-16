@@ -42,7 +42,7 @@ export function OpportunityCard({
   };
 
   return (
-    <Card hoverable className="flex flex-col justify-between overflow-hidden border-slate-200">
+    <Card hoverable className="flex flex-col justify-between overflow-hidden border-slate-200 transition-all">
       <CardContent className="p-5 sm:p-6 space-y-4">
         {/* Header Badge & Skor Kecocokan */}
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -71,7 +71,7 @@ export function OpportunityCard({
           <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
             {opportunity.title}
           </h3>
-          <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed font-normal">
             {opportunity.shortDescription}
           </p>
         </div>
@@ -142,10 +142,15 @@ export function OpportunityCard({
             <button
               type="button"
               onClick={() => setShowMarketIntel(!showMarketIntel)}
-              className="w-full flex items-center justify-between p-2.5 rounded-xl bg-blue-50/70 hover:bg-blue-100/70 border border-blue-200/80 text-brand-primary text-xs font-semibold transition-colors"
+              aria-expanded={showMarketIntel}
+              className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-bold transition-all border ${
+                showMarketIntel
+                  ? "bg-slate-900 text-white border-slate-900 shadow-sm"
+                  : "bg-blue-50/80 hover:bg-blue-100/90 text-brand-primary border-blue-200/80"
+              }`}
             >
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-brand-secondary" />
+              <div className="flex items-center gap-2">
+                <Sparkles className={`w-4 h-4 ${showMarketIntel ? "text-amber-300" : "text-brand-secondary"}`} />
                 <span>
                   {showMarketIntel
                     ? t.rekomendasi.marketIntelHide
@@ -153,14 +158,14 @@ export function OpportunityCard({
                 </span>
               </div>
               {showMarketIntel ? (
-                <ChevronUp className="w-4 h-4 text-brand-secondary" />
+                <ChevronUp className="w-4 h-4 text-slate-300" />
               ) : (
                 <ChevronDown className="w-4 h-4 text-brand-secondary" />
               )}
             </button>
 
             {showMarketIntel && (
-              <div className="mt-3">
+              <div className="mt-3 animate-in fade-in duration-200">
                 <MarketIntelligencePanel
                   intelligence={opportunity.marketIntelligence}
                   cityLocation={cityLocation}
