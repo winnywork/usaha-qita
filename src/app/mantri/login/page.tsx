@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { loginMantri, getCurrentMantri, DEMO_MANTRI_ACCOUNTS } from "@/services/mantriService";
+import { loginMantriAsync, getCurrentMantri, DEMO_MANTRI_ACCOUNTS } from "@/services/mantriService";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function MantriLoginPage() {
@@ -35,35 +35,40 @@ export default function MantriLoginPage() {
     }
   }, [router]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
 
-    setTimeout(() => {
-      const res = loginMantri(personalNumber, pin);
+    try {
+      const res = await loginMantriAsync(personalNumber, pin);
       setIsLoading(false);
       if (res.success) {
         router.push("/mantri/dashboard");
       } else {
         setError(res.error || "Gagal masuk. Periksa kembali NIP dan PIN Anda.");
       }
-    }, 400);
+    } catch {
+      setIsLoading(false);
+      setError("Terjadi kesalahan koneksi server database. Silakan coba lagi.");
+    }
   };
 
-  const handleQuickDemo = (nip: string, demoPin: string) => {
+  const handleQuickDemo = async (nip: string, demoPin: string) => {
     setPersonalNumber(nip);
     setPin(demoPin);
     setError(null);
     setIsLoading(true);
 
-    setTimeout(() => {
-      const res = loginMantri(nip, demoPin);
+    try {
+      const res = await loginMantriAsync(nip, demoPin);
       setIsLoading(false);
       if (res.success) {
         router.push("/mantri/dashboard");
       }
-    }, 300);
+    } catch {
+      setIsLoading(false);
+    }
   };
 
   return (

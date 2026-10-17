@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getFirestoreDb } from "@/lib/firebaseAdmin";
 import { MarketIntelligence } from "@/types/business";
 
 const DEFAULT_MARKET_INTELLIGENCE: MarketIntelligence = {
@@ -124,6 +125,19 @@ function normalizeLead(l: RawLeadInput) {
 // GET /api/leads - Ambil semua prospek dari MySQL (fallback graceful jika DB belum online)
 export async function GET() {
   try {
+    const firestore = getFirestoreDb();
+    if (firestore) {
+      const snap = await firestore.collection("leads").orderBy("submittedAt", "desc").get();
+      if (!snap.empty) {
+        const list: unknown[] = [];
+        snap.forEach((doc) => { list.push(normalizeLead(doc.data() as RawLeadInput)); });
+        return NextResponse.json({ success: true, source: "firebase_firestore", data: list });
+      }
+    }
+  } catch (fErr) {
+    console.warn("Firestore leads query failed, trying MySQL:", fErr);
+  }
+  try {
     const leads = await prisma.lead.findMany({
       orderBy: { submittedAt: "desc" },
     });
@@ -141,12 +155,10 @@ export async function GET() {
   }
 }
 
-// POST /api/leads - Simpan prospek baru ke database MySQL
+// POST /api/leads - Simpan prospek baru ke database (Firestore -> MySQL)
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const count = await prisma.lead.count();
-    const newId = `UQ-2026-${String(count + 1).padStart(3, "0")}`;
 
     const rawIntel = (body.marketIntelligence || {}) as Record<string, Record<string, unknown>>;
     const fullIntel: MarketIntelligence = {
@@ -176,6 +188,44 @@ export async function POST(req: NextRequest) {
       ...DEFAULT_FINANCIAL_METRICS,
       ...(body.financialMetrics || {}),
     };
+
+    // 1. Coba simpan ke Firebase Cloud Firestore
+    const firestore = getFirestoreDb();
+    if (firestore) {
+      try {
+        const snap = await firestore.collection("leads").get();
+        const firestoreId = "UQ-2026-" + String(snap.size + 1).padStart(3, "0");
+        const newLeadRecord = {
+          id: firestoreId,
+          applicantName: body.applicantName,
+          applicantPhone: body.applicantPhone,
+          preferredContactTime: body.preferredContactTime || "Pagi",
+          city: body.city || "Malang",
+          specificLocation: body.specificLocation || "Pusat Kota",
+          locationEnvironment: body.locationEnvironment || "Area Komersial",
+          businessTitle: body.businessTitle,
+          businessCategory: body.businessCategory || "kuliner",
+          availableCapital: Number(body.availableCapital || 0),
+          estimatedTotalCapital: Number(body.estimatedTotalCapital || 0),
+          capitalDeficit: Number(body.capitalDeficit || 0),
+          matchScore: Number(body.matchScore || 85),
+          marketIntelligence: fullIntel,
+          financialMetrics: fullMetrics,
+          status: "BARU_MASUK",
+          surveyNotes: body.surveyNotes || "Pengajuan mandiri dari platform UsahaQita",
+          submittedAt: new Date().toISOString(),
+          lastUpdated: new Date().toISOString(),
+        };
+        await firestore.collection("leads").doc(firestoreId).set(newLeadRecord);
+        return NextResponse.json({ success: true, source: "firebase_firestore", data: newLeadRecord });
+      } catch (fErr) {
+        console.warn("Firestore lead insert failed, fallback to MySQL:", fErr);
+      }
+    }
+
+    // 2. Fallback simpan ke MySQL via Prisma
+    const count = await prisma.lead.count();
+    const newId = "UQ-2026-" + String(count + 1).padStart(3, "0");
 
     const newLead = await prisma.lead.create({
       data: {

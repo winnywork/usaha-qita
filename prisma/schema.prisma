@@ -10,17 +10,17 @@ datasource db {
 model User {
   id               String          @id @default(cuid())
   name             String
-  email            String?         @unique
-  phone            String?
-  city             String?
+  email            String?         @unique(map: "email")
+  phone            String?         @db.VarChar(50)
+  city             String?         @db.VarChar(100)
   specificLocation String?
-  locationType     String?
+  locationType     String?         @db.VarChar(100)
   availableCapital Float           @default(0)
-  riskTolerance    String?
+  riskTolerance    String?         @db.VarChar(50)
   createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  leads            Lead[]
+  updatedAt        DateTime        @default(now()) @updatedAt
   financialPlans   FinancialPlan[]
+  leads            Lead[]
 
   @@map("users")
 }
@@ -28,8 +28,8 @@ model User {
 model BusinessOpportunity {
   id                   String   @id
   title                String
-  slug                 String   @unique
-  category             String
+  slug                 String   @unique(map: "slug")
+  category             String   @db.VarChar(100)
   description          String   @db.Text
   estimatedMinCapital  Float
   targetMarket         String
@@ -37,7 +37,7 @@ model BusinessOpportunity {
   financialTemplate    String   @db.Text
   marketIntelligence   String   @db.Text
   createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  updatedAt            DateTime @default(now()) @updatedAt
   leads                Lead[]
 
   @@map("business_opportunities")
@@ -47,46 +47,48 @@ model Lead {
   id                     String               @id
   submittedAt            DateTime             @default(now())
   applicantName          String
-  applicantPhone         String
-  preferredContactTime   String
-  city                   String
+  applicantPhone         String               @db.VarChar(50)
+  preferredContactTime   String               @db.VarChar(100)
+  city                   String               @db.VarChar(100)
   specificLocation       String
   locationEnvironment    String
   businessTitle          String
-  businessCategory       String
+  businessCategory       String               @db.VarChar(100)
   availableCapital       Float
   estimatedTotalCapital  Float
   capitalDeficit         Float
   matchScore             Int
-  marketIntelligenceJson String               @db.Text
-  financialMetricsJson   String               @db.Text
-  status                 String               @default("BARU_MASUK")
+  marketIntelligenceJson String               @db.LongText
+  financialMetricsJson   String               @db.LongText
+  status                 String               @default("BARU_MASUK") @db.VarChar(50)
   assignedMantriId       String?
   surveyNotes            String?              @db.Text
   creditAssessmentJson   String?              @db.Text
   lastUpdated            DateTime             @default(now()) @updatedAt
   userId                 String?
   opportunityId          String?
-  user                   User?                @relation(fields: [userId], references: [id])
-  opportunity            BusinessOpportunity? @relation(fields: [opportunityId], references: [id])
-  mantri                 Mantri?              @relation(fields: [assignedMantriId], references: [id])
+  mantri                 Mantri?              @relation(fields: [assignedMantriId], references: [id], map: "fk_leads_mantri")
+  opportunity            BusinessOpportunity? @relation(fields: [opportunityId], references: [id], map: "fk_leads_opportunity")
+  user                   User?                @relation(fields: [userId], references: [id], map: "fk_leads_user")
 
-  @@index([status])
-  @@index([assignedMantriId])
+  @@index([opportunityId], map: "fk_leads_opportunity")
+  @@index([userId], map: "fk_leads_user")
+  @@index([assignedMantriId], map: "idx_leads_mantri")
+  @@index([status], map: "idx_leads_status")
   @@map("leads")
 }
 
 model Mantri {
   id             String   @id
   name           String
-  personalNumber String   @unique
-  pin            String
+  personalNumber String   @unique(map: "personalNumber") @db.VarChar(100)
+  pin            String   @db.VarChar(50)
   unitName       String
   branchOffice   String
-  role           String   @default("MANTRI")
+  role           String   @default("MANTRI") @db.VarChar(50)
   assignedAreas  String   @db.Text
   createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  updatedAt      DateTime @default(now()) @updatedAt
   leads          Lead[]
 
   @@map("mantri_users")
@@ -107,8 +109,9 @@ model FinancialPlan {
   paybackMonths        Float
   isProfitable         Boolean  @default(true)
   createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  user                 User?    @relation(fields: [userId], references: [id])
+  updatedAt            DateTime @default(now()) @updatedAt
+  user                 User?    @relation(fields: [userId], references: [id], map: "fk_plans_user")
 
+  @@index([userId], map: "fk_plans_user")
   @@map("financial_plans")
 }

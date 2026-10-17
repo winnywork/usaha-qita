@@ -10,25 +10,58 @@ import {
   Sparkles,
   ShieldCheck,
   Compass,
+  RefreshCw,
 } from "lucide-react";
 import { MarketIntelligence } from "@/types/business";
 import { useLanguage } from "@/context/LanguageContext";
+import { fetchDynamicMarketIntelligence } from "@/services/marketIntelligenceService";
 
 interface MarketIntelligencePanelProps {
   intelligence: MarketIntelligence;
   cityLocation?: string;
   specificLocation?: string;
+  businessTitle?: string;
+  category?: string;
 }
 
 export function MarketIntelligencePanel({
   intelligence,
   cityLocation,
   specificLocation,
+  businessTitle,
+  category,
 }: MarketIntelligencePanelProps) {
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<"all" | "places" | "social" | "trends" | "news_bps">("all");
+  const [intel, setIntel] = useState<MarketIntelligence>(intelligence);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isDynamic, setIsDynamic] = useState<boolean>(false);
 
-  const { socialMediaTrend, googlePlaces, localNews, googleTrends, bpsStats } = intelligence;
+  const { socialMediaTrend, googlePlaces, localNews, googleTrends, bpsStats } = intel;
+
+  const handleRefresh = async () => {
+    if (!businessTitle) return;
+    setIsLoading(true);
+    try {
+      const res = await fetchDynamicMarketIntelligence(
+        {
+          businessTitle,
+          category: category || "kuliner",
+          cityLocation,
+          specificLocation,
+        },
+        intelligence
+      );
+      setIntel(res.data);
+      if (res.source === "live_ai_grounded") {
+        setIsDynamic(true);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const locationDisplay = specificLocation
     ? `${specificLocation}, ${cityLocation || "Indonesia"}`
@@ -66,12 +99,31 @@ export function MarketIntelligencePanel({
         </div>
 
         {locationDisplay && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700 w-fit">
-            <MapPin className="w-3.5 h-3.5 text-brand-secondary shrink-0" />
-            <span>
-              {language === "en" ? "Calibrated area: " : "Area riset: "}
-              <strong className="text-slate-900 font-semibold">{locationDisplay}</strong>
-            </span>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700 w-fit">
+              <MapPin className="w-3.5 h-3.5 text-brand-secondary shrink-0" />
+              <span>
+                {language === "en" ? "Calibrated area: " : "Area riset: "}
+                <strong className="text-slate-900 font-semibold">{locationDisplay}</strong>
+              </span>
+              {isDynamic && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 ml-1">
+                  Live AI Grounded
+                </span>
+              )}
+            </div>
+            {businessTitle && (
+              <button
+                type="button"
+                onClick={handleRefresh}
+                disabled={isLoading}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-primary hover:text-brand-dark px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors"
+                title="Perbarui sinyal intelijen pasar real-time"
+              >
+                <RefreshCw className={`w-3 h-3 ${isLoading ? "animate-spin" : ""}`} />
+                <span>{isLoading ? "Menghitung..." : "Perbarui Sinyal Pasar"}</span>
+              </button>
+            )}
           </div>
         )}
       </div>

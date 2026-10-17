@@ -230,6 +230,32 @@ export function loginMantri(
   return { success: true, user: mantriUser };
 }
 
+
+export async function loginMantriAsync(
+  personalNumber: string,
+  pin: string
+): Promise<{ success: boolean; user?: MantriUser; error?: string }> {
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/mantri/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ personalNumber, pin }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.mantri) {
+        localStorage.setItem(MANTRI_SESSION_KEY, JSON.stringify(data.mantri));
+        return { success: true, user: data.mantri };
+      } else if (res.status === 401 || res.status === 400) {
+        return { success: false, error: data.error || "Personal Number atau PIN salah." };
+      }
+    } catch (err) {
+      console.warn("Could not connect to /api/mantri/login, fallback to local:", err);
+    }
+  }
+  return loginMantri(personalNumber, pin);
+}
+
 export function logoutMantri(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(MANTRI_SESSION_KEY);
@@ -367,6 +393,47 @@ export async function getLeadByIdAsync(id: string): Promise<ConsultationLead | u
   } catch {
     return local;
   }
+}
+
+
+export async function submitNewLeadAsync(
+  leadInput: Omit<ConsultationLead, "id" | "submittedAt" | "lastUpdated" | "status">
+): Promise<ConsultationLead> {
+  const leads = getConsultationLeads();
+  const fallbackId = `UQ-2026-${String(leads.length + 1).padStart(3, "0")}`;
+  const now = new Date().toISOString();
+
+  let finalLead: ConsultationLead = {
+    ...leadInput,
+    id: fallbackId,
+    submittedAt: now,
+    lastUpdated: now,
+    status: "BARU_MASUK",
+  };
+
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(finalLead),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          finalLead = normalizeLead(json.data);
+        }
+      }
+    } catch (err) {
+      console.warn("Could not sync new lead to MySQL, fallback to local storage:", err);
+    }
+
+    const currentLeads = getConsultationLeads();
+    const updated = [finalLead, ...currentLeads.filter((l) => l.id !== finalLead.id)];
+    localStorage.setItem(MANTRI_LEADS_KEY, JSON.stringify(updated));
+  }
+
+  return finalLead;
 }
 
 export function submitNewLead(

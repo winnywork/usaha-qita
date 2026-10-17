@@ -170,6 +170,8 @@ export function OpportunityCard({
                   intelligence={opportunity.marketIntelligence}
                   cityLocation={cityLocation}
                   specificLocation={specificLocation}
+                  businessTitle={opportunity.title}
+                  category={opportunity.category}
                 />
               </div>
             )}

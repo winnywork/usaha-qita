@@ -278,6 +278,8 @@ export default function RekomendasiPage() {
                   intelligence={selectedForModal.opportunity.marketIntelligence}
                   cityLocation={profile?.cityLocation}
                   specificLocation={profile?.specificLocation}
+                  businessTitle={selectedForModal.opportunity.title}
+                  category={selectedForModal.opportunity.category}
                 />
               </div>
             )}

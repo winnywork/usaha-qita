@@ -250,6 +250,8 @@ export default function MantriProspekDetailPage({ params }: PageProps) {
                 intelligence={lead.marketIntelligence}
                 cityLocation={lead.city}
                 specificLocation={lead.specificLocation}
+                businessTitle={lead.businessTitle}
+                category={lead.businessCategory}
               />
             </div>
 

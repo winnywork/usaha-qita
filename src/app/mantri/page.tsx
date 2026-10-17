@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { ErrorAlert } from "@/components/feedback/ErrorAlert";
 import { getSelectedOpportunity, getUserProfile } from "@/services/storageService";
-import { submitNewLead } from "@/services/mantriService";
+import { submitNewLeadAsync } from "@/services/mantriService";
 import { calculateFinancials } from "@/core/finance/calculator";
 import { useLanguage } from "@/context/LanguageContext";
 import { businessOpportunities } from "@/data/opportunities";
@@ -34,6 +34,7 @@ export default function MantriPage() {
   const [hasAgreedConsent, setHasAgreedConsent] = useState<boolean>(false);
 
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submittedLeadId, setSubmittedLeadId] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const { t, language } = useLanguage();
@@ -49,7 +50,7 @@ export default function MantriPage() {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!fullName.trim()) {
@@ -78,40 +79,51 @@ export default function MantriPage() {
     }
 
     setErrorMessage("");
+    setIsSubmitting(true);
 
-    // Prepare lead data
-    const user = getUserProfile();
-    const opp = getSelectedOpportunity() || businessOpportunities[0];
+    try {
+      // Prepare lead data
+      const user = getUserProfile();
+      const opp = getSelectedOpportunity() || businessOpportunities[0];
 
-    const fin = calculateFinancials(opp.defaultAssumptions);
+      const fin = calculateFinancials(opp.defaultAssumptions);
 
-    const lead = submitNewLead({
-      applicantName: fullName.trim(),
-      applicantPhone: phoneNumber.trim(),
-      preferredContactTime,
-      city: city || user?.cityLocation || "Indonesia",
-      specificLocation: user?.specificLocation || "Area Rencana Usaha",
-      locationEnvironment: user?.locationEnvironment || "Lingkungan Usaha",
-      businessTitle: businessName || opp.title,
-      businessCategory: opp.category,
-      availableCapital: user?.availableCapital || 5000000,
-      estimatedTotalCapital: opp.estimatedMinCapital,
-      capitalDeficit: Math.max(0, opp.estimatedMinCapital - (user?.availableCapital || 5000000)),
-      matchScore: 90,
-      marketIntelligence: opp.marketIntelligence!,
-      financialMetrics: {
-        dailyVolume: opp.defaultAssumptions.dailySalesVolume,
-        sellingPrice: opp.defaultAssumptions.sellingPricePerUnit,
-        monthlyNetProfit: fin.monthlyNetProfit,
-        bepUnitsPerDay: fin.bepUnitsPerDay,
-        bepRupiahPerMonth: fin.bepMonthlyRevenue,
-        paybackMonths: fin.estimatedPaybackMonths,
-      },
-      surveyNotes: "Permohonan konsultasi mandiri dari simulasi UsahaQita.",
-    });
+      const lead = await submitNewLeadAsync({
+        applicantName: fullName.trim(),
+        applicantPhone: phoneNumber.trim(),
+        preferredContactTime,
+        city: city || user?.cityLocation || "Indonesia",
+        specificLocation: user?.specificLocation || "Area Rencana Usaha",
+        locationEnvironment: user?.locationEnvironment || "Lingkungan Usaha",
+        businessTitle: businessName || opp.title,
+        businessCategory: opp.category,
+        availableCapital: user?.availableCapital || 5000000,
+        estimatedTotalCapital: opp.estimatedMinCapital,
+        capitalDeficit: Math.max(0, opp.estimatedMinCapital - (user?.availableCapital || 5000000)),
+        matchScore: 90,
+        marketIntelligence: opp.marketIntelligence!,
+        financialMetrics: {
+          dailyVolume: opp.defaultAssumptions.dailySalesVolume,
+          sellingPrice: opp.defaultAssumptions.sellingPricePerUnit,
+          monthlyNetProfit: fin.monthlyNetProfit,
+          bepUnitsPerDay: fin.bepUnitsPerDay,
+          bepRupiahPerMonth: fin.bepMonthlyRevenue,
+          paybackMonths: fin.estimatedPaybackMonths,
+        },
+        surveyNotes: "Permohonan konsultasi mandiri dari simulasi UsahaQita.",
+      });
 
-    setSubmittedLeadId(lead.id);
-    setIsSubmitted(true);
+      setSubmittedLeadId(lead.id);
+      setIsSubmitted(true);
+    } catch {
+      setErrorMessage(
+        language === "en"
+          ? "Failed to submit request. Please try again."
+          : "Gagal mengirim permohonan konsultasi. Silakan periksa koneksi dan coba lagi."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -386,9 +398,13 @@ export default function MantriPage() {
               variant="accent"
               size="lg"
               fullWidth
+              disabled={isSubmitting}
+              isLoading={isSubmitting}
               rightIcon={<Send className="w-4 h-4" />}
             >
-              Kirim Rencana Usaha ke Mantri BRI
+              {isSubmitting
+                ? (language === "en" ? "Sending to Mantri..." : "Mengirim ke Mantri...")
+                : "Kirim Rencana Usaha ke Mantri BRI"}
             </Button>
           </form>
         </Card>

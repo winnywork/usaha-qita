@@ -180,16 +180,22 @@ Berikan respons HANYA dalam format JSON valid sesuai skema berikut tanpa tanda p
 - Bahasa Respons: ${isEnglish ? "English" : "Bahasa Indonesia"}`;
 
     // Panggilan live ke Google Gemini API dengan model fallback multi-tier
-    const modelsToTry = ["gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.8-flash"];
+    const modelsToTry = [
+      "gemini-3.8-flash",
+      "gemini-3-flash-preview",
+      "gemini-flash-latest",
+      "gemini-2.5-flash-lite",
+    ];
     let rawResultText: string | null = null;
 
     for (const modelName of modelsToTry) {
       try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
         const geminiRes = await fetch(geminiUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
           },
           body: JSON.stringify({
             contents: [
@@ -203,7 +209,7 @@ Berikan respons HANYA dalam format JSON valid sesuai skema berikut tanpa tanda p
               temperature: 0.3,
             },
           }),
-          signal: AbortSignal.timeout(6000),
+          signal: AbortSignal.timeout(5000),
         });
 
         if (geminiRes.ok) {
