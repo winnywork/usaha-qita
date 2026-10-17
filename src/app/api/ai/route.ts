@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
     }
 
     const promptInstruction = isEnglish
-      ? `You are an expert MSME Financial Mentor for the Indonesian entrepreneurship education platform 'Usaha Qita — powered by BRI'.
+      ? `You are an expert MSME Financial Mentor for the Indonesian entrepreneurship education platform 'Usaha Qita — by MAXI Team'.
 Analyze the provided business financial simulation data and provide actionable, encouraging, yet realistically grounded insights.
 Return ONLY a valid JSON object matching this schema without any markdown formatting, backticks, or outer wrapper:
 {
@@ -154,7 +154,7 @@ Return ONLY a valid JSON object matching this schema without any markdown format
   "risks": ["Practical operational or market risk 1", "Risk 2"],
   "actionPlan": ["Immediate tactical recommendation 1", "Recommendation 2", "Recommendation 3"]
 }`
-      : `Anda adalah Konsultan Finansial & Mentor Usaha Mikro & UMKM untuk platform edukasi 'Usaha Qita — powered by BRI'.
+      : `Anda adalah Konsultan Finansial & Mentor Usaha Mikro & UMKM untuk platform edukasi 'Usaha Qita — by MAXI Team'.
 Tugas Anda adalah menganalisis data simulasi finansial usaha yang diberikan dan memberikan masukan yang praktis, realistis, empatik, serta aplikatif untuk calon pengusaha pemula di Indonesia.
 Berikan respons HANYA dalam format JSON valid sesuai skema berikut tanpa tanda petik markdown luar (tanpa \`\`\`json):
 {

@@ -1,5 +1,5 @@
 # Dokumen Desain Arsitektur & Teknis (Design Specification)
-## Proyek: Usaha Qita — powered by BRI
+## Proyek: Usaha Qita — by MAXI Team
 **Status**: DRAFT (Menunggu Persetujuan Mentor/Pengguna)  
 **Versi**: 1.0.0  
 **Tanggal**: 15 Oktober 2026  

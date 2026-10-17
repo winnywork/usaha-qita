@@ -189,7 +189,7 @@ export default function HomePage() {
       {/* 4. Fitur Utama & Kepatuhan */}
       <section className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-10 space-y-8 shadow-sm">
         <div className="max-w-2xl space-y-2">
-          <Badge variant="blue">Usaha Qita — powered by BRI</Badge>
+          <Badge variant="blue">Usaha Qita — by MAXI Team</Badge>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
             Didesain Khusus untuk Wirausaha Pemula & UMKM
           </h2>

@@ -1,5 +1,5 @@
 # Kriteria Penerimaan (Acceptance Criteria)
-## Proyek: Usaha Qita — powered by BRI
+## Proyek: Usaha Qita — by MAXI Team
 **Status**: DRAFT (Menunggu Persetujuan Mentor/Pengguna)  
 **Versi**: 1.0.0  
 **Tanggal**: 15 Oktober 2026  
@@ -19,7 +19,7 @@ Dokumen ini mendefinisikan kriteria kelayakan pengujian untuk setiap kebutuhan s
 - **Skenario 1 (Pesan Nilai & Alur Perencanaan)**:
   - **Given**: Pengguna membuka halaman utama `/`.
   - **When**: Halaman selesai dimuat.
-  - **Then**: Tampil judul produk "Usaha Qita — powered by BRI", penjelasan nilai manfaat, 3 langkah alur perencanaan (Profil -> Analisis -> Eksekusi), dan tombol CTA "Mulai Rencanakan Usaha".
+  - **Then**: Tampil judul produk "Usaha Qita — by MAXI Team", penjelasan nilai manfaat, 3 langkah alur perencanaan (Profil -> Analisis -> Eksekusi), dan tombol CTA "Mulai Rencanakan Usaha".
 - **Skenario 2 (Transparansi & Disclaimer Hukum)**:
   - **Given**: Pengguna melihat bagian bawah (footer) dan banner informasi.
   - **When**: Pengguna memeriksa teks catatan resmi.

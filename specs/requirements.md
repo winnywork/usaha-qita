@@ -1,5 +1,5 @@
 # Dokumen Spesifikasi Kebutuhan (Requirements Specification)
-## Proyek: Usaha Qita — powered by BRI
+## Proyek: Usaha Qita — by MAXI Team
 **Status**: DRAFT (Menunggu Persetujuan Mentor/Pengguna)  
 **Versi**: 1.0.0  
 **Tanggal**: 15 Oktober 2026  
@@ -14,7 +14,7 @@ Banyak calon wirausahawan pemula dan pelaku UMKM di Indonesia memiliki semangat 
 3. Tidak memiliki peta jalan (roadmap) langkah konkret dari hari pertama hingga pembukaan usaha.
 4. Kurangnya pemahaman mengenai peran pendampingan perbankan formal seperti Mantri BRI.
 
-**Usaha Qita — powered by BRI** hadir sebagai konsep asisten perencanaan usaha digital yang mendidik, mudah digunakan, dan objektif.
+**Usaha Qita — by MAXI Team** hadir sebagai konsep asisten perencanaan usaha digital yang mendidik, mudah digunakan, dan objektif.
 
 ---
 

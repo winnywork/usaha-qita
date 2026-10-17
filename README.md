@@ -1,4 +1,4 @@
-# Usaha Qita — powered by BRI
+# Usaha Qita — by MAXI Team
 
 > **Asisten Perencanaan Usaha Digital bagi Calon Wirausaha dan UMKM Indonesia**
 

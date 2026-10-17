@@ -20,7 +20,7 @@ export function Footer() {
               </div>
               <span className="font-bold text-base tracking-tight text-white">Usaha Qita</span>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-white/15 text-white font-semibold border border-white/20">
-                powered by BRI
+                by MAXI Team
               </span>
             </div>
             <p className="text-xs sm:text-sm text-blue-100/90 max-w-md leading-relaxed">

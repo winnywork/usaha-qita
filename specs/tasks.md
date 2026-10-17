@@ -1,5 +1,5 @@
 # Rencana Kerja & Daftar Tugas (Task List)
-## Proyek: Usaha Qita — powered by BRI
+## Proyek: Usaha Qita — by MAXI Team
 **Status Keseluruhan**: Seluruh Alur Fase 8 Selesai & Terverifikasi  
 **Versi**: 1.2.0  
 **Tanggal Pembaruan**: 15 Oktober 2026  

@@ -4,7 +4,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { LanguageProvider } from "@/context/LanguageContext";
 
 export const metadata: Metadata = {
-  title: "Usaha Qita — powered by BRI | Asisten Perencanaan Usaha",
+  title: "Usaha Qita — by MAXI Team | Asisten Perencanaan Usaha",
   description:
     "Asisten digital perencanaan usaha mandiri bagi calon wirausaha dan UMKM Indonesia dengan simulasi peluang usaha terukur dan kalkulasi titik impas.",
   keywords: [
