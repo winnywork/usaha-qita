@@ -13,13 +13,14 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
 
-  // Internal bank portal routes should render full-bleed with their own bank header & styling
-  const isMantriPortal =
+  // Internal bank portal & administrator routes should render full-bleed with their own dedicated headers & styling
+  const isSpecialPortal =
     pathname.startsWith("/mantri/dashboard") ||
     pathname.startsWith("/mantri/prospek") ||
-    pathname.startsWith("/mantri/login");
+    pathname.startsWith("/mantri/login") ||
+    pathname.startsWith("/admin");
 
-  if (isMantriPortal) {
+  if (isSpecialPortal) {
     return (
       <main className="flex-1 w-full min-h-screen bg-slate-50 text-slate-900">
         {children}

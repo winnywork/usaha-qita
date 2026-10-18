@@ -17,7 +17,8 @@ export function Navbar() {
   if (
     pathname.startsWith("/mantri/dashboard") ||
     pathname.startsWith("/mantri/prospek") ||
-    pathname.startsWith("/mantri/login")
+    pathname.startsWith("/mantri/login") ||
+    pathname.startsWith("/admin")
   ) {
     return null;
   }
