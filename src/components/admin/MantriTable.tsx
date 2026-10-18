@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Building2, Edit2, Trash2, KeyRound, Eye, EyeOff, Users } from "lucide-react";
+import { Building2, Edit2, Trash2, KeyRound, Eye, EyeOff, Users, Phone } from "lucide-react";
 import { MantriUserDto } from "@/app/api/admin/mantri/route";
 
 interface MantriTableProps {
@@ -69,9 +69,17 @@ export function MantriTable({ users, isLoading, onEdit, onQuickPin, onDelete }: 
                     </div>
                     <div>
                       <span className="font-bold text-slate-900 block">{mantri.name}</span>
-                      <span className="text-[10px] font-semibold text-[#0857c3] bg-blue-50 px-2 py-0.5 rounded border border-blue-200 inline-block mt-0.5">
-                        {mantri.role || "MANTRI"}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                        <span className="text-[10px] font-semibold text-[#0857c3] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                          {mantri.role || "MANTRI"}
+                        </span>
+                        {mantri.phoneNumber && (
+                          <span className="text-[10px] font-mono font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                            <Phone className="w-2.5 h-2.5 text-emerald-600" />
+                            <span>{mantri.phoneNumber}</span>
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </td>

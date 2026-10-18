@@ -15,6 +15,7 @@ export function MantriModal({ mode, initialData, onClose, onSuccess }: MantriMod
   const [name, setName] = useState(initialData?.name || "");
   const [personalNumber, setPersonalNumber] = useState(initialData?.personalNumber || "");
   const [pin, setPin] = useState(initialData?.pin || "");
+  const [phoneNumber, setPhoneNumber] = useState(initialData?.phoneNumber || "");
   const [branchOffice, setBranchOffice] = useState(initialData?.branchOffice || "");
   const [unitName, setUnitName] = useState(initialData?.unitName || "");
   const [role, setRole] = useState(initialData?.role || "MANTRI");
@@ -44,6 +45,7 @@ export function MantriModal({ mode, initialData, onClose, onSuccess }: MantriMod
       name: name.trim(),
       personalNumber: personalNumber.trim().toUpperCase(),
       pin: pin.trim(),
+      phoneNumber: phoneNumber.trim(),
       branchOffice: branchOffice.trim(),
       unitName: unitName.trim(),
       role: role.trim(),
@@ -135,6 +137,20 @@ export function MantriModal({ mode, initialData, onClose, onSuccess }: MantriMod
                 placeholder="Contoh: BRI-882043"
                 required
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0857c3] font-mono"
+              />
+            </div>
+
+            {/* Nomor WhatsApp Mantri */}
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-700 block">
+                Nomor WhatsApp Mantri
+              </label>
+              <input
+                type="text"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="Contoh: 081234567890"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0857c3] font-mono text-xs sm:text-sm"
               />
             </div>
 

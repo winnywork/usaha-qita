@@ -7,6 +7,7 @@ export interface MantriUserDto {
   name: string;
   personalNumber: string;
   pin: string;
+  phoneNumber?: string;
   unitName: string;
   branchOffice: string;
   role: string;
@@ -31,6 +32,7 @@ export async function GET() {
             name: data.name || "",
             personalNumber: data.personalNumber || "",
             pin: data.pin || "",
+            phoneNumber: data.phoneNumber || "",
             unitName: data.unitName || "",
             branchOffice: data.branchOffice || "",
             role: data.role || "MANTRI",
@@ -79,6 +81,7 @@ export async function GET() {
         name: r.name,
         personalNumber: r.personalNumber,
         pin: r.pin,
+        phoneNumber: "",
         unitName: r.unitName,
         branchOffice: r.branchOffice,
         role: r.role,
@@ -113,7 +116,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, personalNumber, pin, unitName, branchOffice, role, assignedAreas } = body;
+    const { name, personalNumber, pin, phoneNumber, unitName, branchOffice, role, assignedAreas } = body;
 
     if (!name || !personalNumber || !pin || !unitName || !branchOffice) {
       return NextResponse.json(
@@ -135,6 +138,7 @@ export async function POST(req: NextRequest) {
       name: String(name).trim(),
       personalNumber: cleanPN,
       pin: String(pin).trim(),
+      phoneNumber: String(phoneNumber || "").trim(),
       unitName: String(unitName).trim(),
       branchOffice: String(branchOffice).trim(),
       role: role ? String(role).trim().toUpperCase() : "MANTRI",

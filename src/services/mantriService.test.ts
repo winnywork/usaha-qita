@@ -5,6 +5,7 @@ import {
   logoutMantri,
   getCurrentMantri,
   generateWhatsAppUrl,
+  generateUserToMantriWhatsAppUrl,
 } from "./mantriService";
 
 // Mock localStorage for Node test environment
@@ -146,6 +147,23 @@ describe("Mantri BRI Service & KUR Assessment Engine", () => {
       );
       expect(url).toContain("https://wa.me/6281234567890");
       expect(url).toContain("Ahmad%20Fauzi");
+      expect(url).toContain("Booth%20Kopi%20Susu");
+    });
+    it("menghasilkan URL WhatsApp dari pemohon ke Mantri dengan nomor internasional (62) dan parameter lengkap", () => {
+      const url = generateUserToMantriWhatsAppUrl({
+        mantriPhone: "0812-3456-7891",
+        mantriName: "Winny Ardhian Septiko",
+        unitName: "BRI Unit Dinoyo",
+        applicantName: "Ahmad Fauzi",
+        businessTitle: "Booth Kopi Susu",
+        city: "Malang",
+        leadId: "UQ-2026-001",
+        availableCapital: 5000000,
+        capitalDeficit: 3500000,
+      });
+      expect(url).toContain("https://wa.me/6281234567891");
+      expect(url).toContain("Winny%20Ardhian%20Septiko");
+      expect(url).toContain("UQ-2026-001");
       expect(url).toContain("Booth%20Kopi%20Susu");
     });
   });

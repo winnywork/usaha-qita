@@ -99,30 +99,75 @@ export async function POST(req: NextRequest) {
         let assignedMantriName = "";
         let assignedBranch = "";
         let assignedUnit = "";
+        let assignedMantriPhone = "";
 
         const mantriSnap = await firestore.collection("mantri_users").get();
         if (!mantriSnap.empty) {
+          let bestScore = 0;
+          let bestMantri: {
+            id: string;
+            name?: string;
+            branchOffice?: string;
+            unitName?: string;
+            phoneNumber?: string;
+          } | null = null;
+
           for (const mDoc of mantriSnap.docs) {
             const m = mDoc.data();
+            if (m.status === "INACTIVE") continue;
+
             const areas: string[] = Array.isArray(m.assignedAreas) ? m.assignedAreas : [];
             const branch: string = (m.branchOffice || "").toLowerCase();
             const unit: string = (m.unitName || "").toLowerCase();
 
-            const areaMatch = areas.some((a) => {
-              const lowerA = a.toLowerCase();
-              return targetLoc.includes(lowerA) || lowerA.includes(targetLoc);
-            });
-            const branchOrUnitMatch =
-              (targetCity && branch.includes(targetCity)) ||
-              (targetLoc && unit.includes(targetLoc));
+            let score = 1; // Base score for active officer
 
-            if (areaMatch || branchOrUnitMatch) {
-              assignedMantriId = mDoc.id;
-              assignedMantriName = m.name || "";
-              assignedBranch = m.branchOffice || "";
-              assignedUnit = m.unitName || "";
-              break;
+            // 1. Prioritas tertinggi: Kecocokan spesifik nama area / kecamatan (+100)
+            const exactAreaMatch = areas.some((a) => {
+              const lowerA = a.toLowerCase();
+              return targetLoc && (targetLoc.includes(lowerA) || lowerA.includes(targetLoc));
+            });
+            if (exactAreaMatch) {
+              score += 100;
             }
+
+            // 2. Kecocokan nama unit kerja BRI dengan lokasi (+50)
+            if (targetLoc && unit.includes(targetLoc)) {
+              score += 50;
+            }
+
+            // 3. Kecocokan nama kota di dalam daftar wilayah binaan (+30)
+            const cityInArea = areas.some((a) => {
+              const lowerA = a.toLowerCase();
+              return targetCity && (targetCity.includes(lowerA) || lowerA.includes(targetCity));
+            });
+            if (cityInArea) {
+              score += 30;
+            }
+
+            // 4. Kecocokan kantor cabang dengan nama kota (+20)
+            if (targetCity && branch.includes(targetCity)) {
+              score += 20;
+            }
+
+            if (score > bestScore) {
+              bestScore = score;
+              bestMantri = {
+                id: mDoc.id,
+                name: m.name,
+                branchOffice: m.branchOffice,
+                unitName: m.unitName,
+                phoneNumber: m.phoneNumber,
+              };
+            }
+          }
+
+          if (bestMantri) {
+            assignedMantriId = bestMantri.id;
+            assignedMantriName = bestMantri.name || "";
+            assignedBranch = bestMantri.branchOffice || "";
+            assignedUnit = bestMantri.unitName || "";
+            assignedMantriPhone = bestMantri.phoneNumber || "";
           }
         }
 
@@ -150,6 +195,7 @@ export async function POST(req: NextRequest) {
           assignedMantriName: assignedMantriName || undefined,
           assignedBranch: assignedBranch || undefined,
           assignedUnit: assignedUnit || undefined,
+          assignedMantriPhone: assignedMantriPhone || undefined,
           surveyNotes: body.surveyNotes || "Pengajuan mandiri dari platform UsahaQita",
           submittedAt: new Date().toISOString(),
           lastUpdated: new Date().toISOString(),

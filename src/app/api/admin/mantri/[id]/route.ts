@@ -12,7 +12,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     const { id } = await params;
     const body = await req.json();
 
-    const { name, personalNumber, pin, unitName, branchOffice, role, assignedAreas } = body;
+    const { name, personalNumber, pin, phoneNumber, unitName, branchOffice, role, assignedAreas } = body;
 
     const cleanAreas = Array.isArray(assignedAreas)
       ? assignedAreas
@@ -27,6 +27,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     if (name) updatedData.name = String(name).trim();
     if (personalNumber) updatedData.personalNumber = String(personalNumber).trim();
     if (pin) updatedData.pin = String(pin).trim();
+    if (phoneNumber !== undefined) updatedData.phoneNumber = String(phoneNumber).trim();
     if (unitName) updatedData.unitName = String(unitName).trim();
     if (branchOffice) updatedData.branchOffice = String(branchOffice).trim();
     if (role) updatedData.role = String(role).trim().toUpperCase();

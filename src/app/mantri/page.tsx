@@ -11,16 +11,27 @@ import {
   Send,
   ArrowLeft,
   Clock,
-  Lock,
   ArrowRight,
-  Sparkles,
+  MapPin,
+  Coins,
+  TrendingUp,
+  MessageSquare,
+  UserCheck,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { ErrorAlert } from "@/components/feedback/ErrorAlert";
-import { getSelectedOpportunity, getUserProfile } from "@/services/storageService";
-import { submitNewLeadAsync } from "@/services/mantriService";
+import {
+  getSelectedOpportunity,
+  getUserProfile,
+  getCustomAssumptions,
+} from "@/services/storageService";
+import {
+  submitNewLeadAsync,
+  generateUserToMantriWhatsAppUrl,
+} from "@/services/mantriService";
+import { ConsultationLead } from "@/types/mantri";
 import { calculateFinancials } from "@/core/finance/calculator";
 import { useLanguage } from "@/context/LanguageContext";
 import { businessOpportunities } from "@/data/opportunities";
@@ -29,12 +40,14 @@ export default function MantriPage() {
   const [fullName, setFullName] = useState<string>("");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [city, setCity] = useState<string>("");
+  const [specificLocation, setSpecificLocation] = useState<string>("");
   const [businessName, setBusinessName] = useState<string>("");
   const [preferredContactTime, setPreferredContactTime] = useState<string>("Pagi (08:30 - 11:30 WIB)");
   const [hasAgreedConsent, setHasAgreedConsent] = useState<boolean>(false);
 
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submittedLead, setSubmittedLead] = useState<ConsultationLead | null>(null);
   const [submittedLeadId, setSubmittedLeadId] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const { t, language } = useLanguage();
@@ -45,10 +58,20 @@ export default function MantriPage() {
       setBusinessName(opp.title);
     }
     const user = getUserProfile();
-    if (user && user.cityLocation) {
-      setCity(user.cityLocation);
+    if (user) {
+      if (user.cityLocation) setCity(user.cityLocation);
+      if (user.specificLocation) setSpecificLocation(user.specificLocation);
     }
   }, []);
+
+  const formatRupiah = (val?: number) => {
+    if (val === undefined || val === null) return "Rp 0";
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(val);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,37 +105,42 @@ export default function MantriPage() {
     setIsSubmitting(true);
 
     try {
-      // Prepare lead data
       const user = getUserProfile();
       const opp = getSelectedOpportunity() || businessOpportunities[0];
+      const customAssumptions = getCustomAssumptions(opp.id);
+      const finalAssumptions = customAssumptions || opp.defaultAssumptions;
+      const fin = calculateFinancials(finalAssumptions);
 
-      const fin = calculateFinancials(opp.defaultAssumptions);
+      const estimatedTotalCapital = finalAssumptions.initialEquipmentCost || opp.estimatedMinCapital;
+      const availableCapital = user?.availableCapital || 5000000;
+      const capitalDeficit = Math.max(0, estimatedTotalCapital - availableCapital);
 
       const lead = await submitNewLeadAsync({
         applicantName: fullName.trim(),
         applicantPhone: phoneNumber.trim(),
         preferredContactTime,
-        city: city || user?.cityLocation || "Indonesia",
-        specificLocation: user?.specificLocation || "Area Rencana Usaha",
-        locationEnvironment: user?.locationEnvironment || "Lingkungan Usaha",
-        businessTitle: businessName || opp.title,
+        city: city.trim() || user?.cityLocation || "Malang",
+        specificLocation: specificLocation.trim() || user?.specificLocation || city.trim() || "Pusat Kota",
+        locationEnvironment: user?.locationEnvironment || "Area Komersial",
+        businessTitle: businessName.trim() || opp.title,
         businessCategory: opp.category,
-        availableCapital: user?.availableCapital || 5000000,
-        estimatedTotalCapital: opp.estimatedMinCapital,
-        capitalDeficit: Math.max(0, opp.estimatedMinCapital - (user?.availableCapital || 5000000)),
+        availableCapital,
+        estimatedTotalCapital,
+        capitalDeficit,
         matchScore: 90,
         marketIntelligence: opp.marketIntelligence!,
         financialMetrics: {
-          dailyVolume: opp.defaultAssumptions.dailySalesVolume,
-          sellingPrice: opp.defaultAssumptions.sellingPricePerUnit,
+          dailyVolume: finalAssumptions.dailySalesVolume,
+          sellingPrice: finalAssumptions.sellingPricePerUnit,
           monthlyNetProfit: fin.monthlyNetProfit,
           bepUnitsPerDay: fin.bepUnitsPerDay,
           bepRupiahPerMonth: fin.bepMonthlyRevenue,
           paybackMonths: fin.estimatedPaybackMonths,
         },
-        surveyNotes: "Permohonan konsultasi mandiri dari simulasi UsahaQita.",
+        surveyNotes: "Permohonan konsultasi mandiri dari simulasi platform UsahaQita.",
       });
 
+      setSubmittedLead(lead);
       setSubmittedLeadId(lead.id);
       setIsSubmitted(true);
     } catch {
@@ -126,39 +154,24 @@ export default function MantriPage() {
     }
   };
 
+  const mantriPhone = submittedLead?.assignedMantriPhone || "081234567891";
+  const mantriName = submittedLead?.assignedMantriName || "Mantri Pembina BRI";
+  const unitName = submittedLead?.assignedUnit || "BRI Unit";
+
+  const waUrl = generateUserToMantriWhatsAppUrl({
+    mantriPhone,
+    mantriName,
+    unitName,
+    applicantName: fullName,
+    businessTitle: businessName,
+    city: city || "Indonesia",
+    leadId: submittedLead?.id || submittedLeadId,
+    availableCapital: submittedLead?.availableCapital,
+    capitalDeficit: submittedLead?.capitalDeficit,
+  });
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 py-6 text-left">
-      {/* Banner Akses Portal Mantri BRI (Untuk Petugas / Evaluator) */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-brand-primary via-brand-primary to-brand-secondary border border-brand-primary/30 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0 shadow-xs">
-            <Building2 className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-wider text-blue-100">
-                PORTAL RESMI BANK
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-white font-semibold border border-white/30 backdrop-blur-xs">
-                POV Mantri BRI
-              </span>
-            </div>
-            <p className="text-xs text-blue-50 font-medium">
-              Apakah Anda petugas Mantri BRI? Akses Dashboard Pemantauan & Verifikasi Debitur.
-            </p>
-          </div>
-        </div>
-
-        <Link
-          href="/mantri/login"
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-blue-50 text-brand-primary transition-colors shrink-0 shadow-sm"
-        >
-          <Lock className="w-3.5 h-3.5" />
-          <span>Login Mantri BRI</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
-
       {/* Header Halaman (Calon Pengusaha) */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
@@ -228,62 +241,139 @@ export default function MantriPage() {
 
       {/* Formulir Minat Konsultasi atau Layar Konfirmasi */}
       {isSubmitted ? (
-        <Card className="p-8 text-center space-y-5 bg-gradient-to-b from-brand-light to-white border-brand-accent/40 shadow-sm animate-in fade-in">
-          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-sm">
-            <CheckCircle2 className="w-8 h-8" />
+        <Card className="p-6 sm:p-8 space-y-6 bg-gradient-to-b from-blue-50/40 via-white to-white border-blue-200/90 shadow-md animate-in fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
+            <CheckCircle2 className="w-9 h-9" />
           </div>
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-xs font-mono font-bold text-brand-primary">
-              ID Pengajuan: {submittedLeadId}
+
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100/70 border border-blue-200 text-xs font-mono font-bold text-brand-primary">
+              <span>No. Registrasi: {submittedLead?.id || submittedLeadId}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span className="text-[10px] text-emerald-700 font-semibold uppercase">Cloud Firestore Live</span>
             </div>
-            <h2 className="text-xl font-bold text-slate-900">
-              Permohonan Konsultasi Berhasil Terkirim ke Mantri BRI!
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              Permohonan Konsultasi Berhasil Terhubung!
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
               {language === "en" ? "Thank you, " : "Terima kasih, "}
-              <strong>{fullName}</strong>.{" "}
+              <strong className="text-slate-900">{fullName}</strong>.{" "}
               {language === "en"
-                ? `Your business plan for ${businessName || "Your Business"} in ${city} has been received and queued in the Mantri BRI monitoring dashboard.`
-                : `Data rencana usaha Anda untuk ${businessName || "Usaha Anda"} di ${city} telah masuk ke dalam antrean dashboard monitoring Mantri BRI.`}
+                ? `Your business plan for "${businessName || "Your Business"}" has been linked to the assigned Mantri officer for ${city}.`
+                : `Rencana usaha "${businessName || "Usaha Anda"}" telah otomatis dipetakan ke Mantri pembina BRI di wilayah ${city}.`}
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white border border-slate-200 max-w-md mx-auto text-xs text-slate-600 text-left space-y-2 shadow-sm">
+          {/* Assigned Mantri Officer Card */}
+          <div className="p-5 rounded-2xl bg-white border-2 border-brand-primary/20 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 text-brand-primary flex items-center justify-center font-bold text-lg border border-blue-100 shrink-0">
+                  <UserCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-brand-secondary uppercase tracking-wider">
+                    Mantri Pembina Wilayah Anda
+                  </div>
+                  <div className="text-base font-bold text-slate-900">
+                    {submittedLead?.assignedMantriName || "Petugas Mantri BRI"}
+                  </div>
+                  <div className="text-xs text-slate-500 font-medium">
+                    {submittedLead?.assignedUnit || "BRI Unit Wilayah Terdekat"}{" "}
+                    {submittedLead?.assignedBranch ? `? ${submittedLead.assignedBranch}` : ""}
+                  </div>
+                </div>
+              </div>
+
+              <Badge variant="blue" className="self-start sm:self-center shrink-0 text-[10px]">
+                Siap Konsultasi
+              </Badge>
+            </div>
+
+            {/* WhatsApp CTA Action */}
+            <div className="space-y-2">
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2.5 w-full py-3.5 px-4 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 shadow-md shadow-emerald-600/20 transition-all text-sm group"
+              >
+                <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span>Hubungi Mantri via WhatsApp Langsung</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
+              <p className="text-[11px] text-center text-slate-500">
+                Pesan WhatsApp otomatis sudah disiapkan berisi ID pengajuan, estimasi modal sendiri, dan kebutuhan pembiayaan Anda.
+              </p>
+            </div>
+          </div>
+
+          {/* Financial & Location Summary Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs text-left">
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="text-slate-500 text-[11px] flex items-center gap-1">
+                <Coins className="w-3.5 h-3.5 text-brand-primary" />
+                <span>Modal Sendiri</span>
+              </div>
+              <div className="font-bold text-slate-900 mt-1 text-xs sm:text-sm">
+                {formatRupiah(submittedLead?.availableCapital)}
+              </div>
+            </div>
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="text-slate-500 text-[11px] flex items-center gap-1">
+                <Building2 className="w-3.5 h-3.5 text-brand-secondary" />
+                <span>Kebutuhan KUR</span>
+              </div>
+              <div className="font-bold text-amber-700 mt-1 text-xs sm:text-sm">
+                {formatRupiah(submittedLead?.capitalDeficit)}
+              </div>
+            </div>
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="text-slate-500 text-[11px] flex items-center gap-1">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Estimasi Laba/Bln</span>
+              </div>
+              <div className="font-bold text-emerald-700 mt-1 text-xs sm:text-sm">
+                {formatRupiah(submittedLead?.financialMetrics?.monthlyNetProfit)}
+              </div>
+            </div>
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="text-slate-500 text-[11px] flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-rose-500" />
+                <span>Wilayah Usaha</span>
+              </div>
+              <div className="font-bold text-slate-900 mt-1 text-xs sm:text-sm truncate">
+                {submittedLead?.specificLocation || specificLocation || city}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200/80 text-xs text-slate-700 text-left space-y-1.5">
             <div className="font-bold text-brand-primary flex items-center gap-1.5">
               <Clock className="w-4 h-4 text-brand-secondary" />
-              <span>Jadwal Kontak: <strong>{preferredContactTime}</strong></span>
+              <span>Jadwal Kontak Pilihan: <strong>{preferredContactTime}</strong></span>
             </div>
-            <p>
-              Mantri BRI wilayah terdekat akan menghubungi Anda melalui WhatsApp di nomor{" "}
-              <strong className="text-slate-900 font-mono">{phoneNumber}</strong> untuk mendiskusikan rencana usaha dan bimbingan rekening permodalan.
+            <p className="text-[11px] leading-relaxed text-slate-600">
+              Jika Anda tidak sempat menghubungi terlebih dahulu, Mantri pembina akan menghubungi Anda pada waktu yang telah dipilih melalui WhatsApp di nomor:{" "}
+              <strong className="text-slate-900 font-mono">{phoneNumber}</strong>.
             </p>
           </div>
 
-          {/* Shortcut Link untuk Penguji / Mantri */}
-          <div className="p-3.5 rounded-2xl bg-slate-900 text-white max-w-md mx-auto text-xs space-y-2 shadow-sm">
-            <div className="flex items-center gap-1.5 text-blue-400 font-bold">
-              <Sparkles className="w-4 h-4" />
-              <span>Khusus Demo / Evaluator:</span>
-            </div>
-            <p className="text-slate-300 text-[11px]">
-              Ingin melihat pengajuan ini langsung dari sudut pandang petugas bank?
-            </p>
-            <Link
-              href="/mantri/dashboard"
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 transition-colors w-full"
-            >
-              <span>Buka Dashboard Monitoring Mantri</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="pt-2 flex justify-center gap-3">
-            <Link href="/roadmap">
-              <Button size="sm" variant="primary">
+          <div className="pt-2 flex flex-col sm:flex-row justify-center gap-3">
+            <Link href="/roadmap" className="w-full sm:w-auto">
+              <Button size="md" variant="primary" fullWidth rightIcon={<ArrowRight className="w-4 h-4" />}>
                 {t.mantri.backRoadmap}
               </Button>
             </Link>
-            <Button size="sm" variant="secondary" onClick={() => setIsSubmitted(false)}>
+            <Button
+              size="md"
+              variant="secondary"
+              className="w-full sm:w-auto"
+              onClick={() => {
+                setIsSubmitted(false);
+                setSubmittedLead(null);
+              }}
+            >
               {t.mantri.sendAnother}
             </Button>
           </div>
@@ -295,7 +385,7 @@ export default function MantriPage() {
               Formulir Permohonan Pendampingan Mantri BRI
             </h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Kirimkan ringkasan rencana usaha Anda untuk diverifikasi dan didampingi langsung oleh Mantri BRI terdekat.
+              Kirimkan ringkasan rencana usaha Anda untuk diverifikasi dan didampingi langsung oleh Mantri BRI pemegang wilayah.
             </p>
           </div>
 
@@ -351,7 +441,7 @@ export default function MantriPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label htmlFor="city" className="text-xs sm:text-sm font-semibold text-slate-700">
-                  Kota / Wilayah Usaha
+                  Kota / Kabupaten
                 </label>
                 <input
                   type="text"
@@ -364,18 +454,35 @@ export default function MantriPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="businessName" className="text-xs sm:text-sm font-semibold text-slate-700">
-                  Rencana Usaha Terpilih
+                <label htmlFor="specificLocation" className="text-xs sm:text-sm font-semibold text-slate-700">
+                  Kecamatan / Kelurahan Rencana Usaha
                 </label>
                 <input
                   type="text"
-                  id="businessName"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder="Contoh: Booth Kopi Susu Gula Aren"
+                  id="specificLocation"
+                  value={specificLocation}
+                  onChange={(e) => setSpecificLocation(e.target.value)}
+                  placeholder="Contoh: Lowokwaru / Dinoyo"
                   className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-accent/50 focus:border-brand-primary min-h-[44px]"
                 />
+                <p className="text-[11px] text-slate-500">
+                  Digunakan untuk auto-mapping ke Mantri pemegang wilayah terdekat.
+                </p>
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="businessName" className="text-xs sm:text-sm font-semibold text-slate-700">
+                Rencana Usaha Terpilih
+              </label>
+              <input
+                type="text"
+                id="businessName"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                placeholder="Contoh: Booth Kopi Susu Gula Aren"
+                className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-accent/50 focus:border-brand-primary min-h-[44px]"
+              />
             </div>
 
             {/* Checkbox Persetujuan Eksplisit (Consent) */}
@@ -388,7 +495,7 @@ export default function MantriPage() {
                   className="w-4 h-4 mt-0.5 rounded text-brand-primary focus:ring-brand-primary cursor-pointer shrink-0"
                 />
                 <span className="text-xs text-slate-700 leading-relaxed">
-                  Saya setuju data simulasi rencana usaha ini diteruskan kepada Mantri BRI untuk keperluan konsultasi edukatif dan pendampingan permodalan usaha mikro.
+                  Saya setuju data rencana usaha ini diteruskan ke database Cloud Firestore untuk dipetakan ke Mantri BRI pemegang wilayah dan pendampingan permodalan usaha mikro.
                 </span>
               </label>
             </div>
@@ -403,8 +510,8 @@ export default function MantriPage() {
               rightIcon={<Send className="w-4 h-4" />}
             >
               {isSubmitting
-                ? (language === "en" ? "Sending to Mantri..." : "Mengirim ke Mantri...")
-                : "Kirim Rencana Usaha ke Mantri BRI"}
+                ? (language === "en" ? "Connecting to Mantri..." : "Menghubungkan ke Mantri...")
+                : "Kirim Rencana Usaha & Hubungkan ke Mantri"}
             </Button>
           </form>
         </Card>

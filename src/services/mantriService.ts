@@ -177,8 +177,7 @@ export function getCurrentMantri(): MantriUser | null {
 }
 
 export function loginMantri(
-  personalNumber: string,
-  _pin?: string
+  personalNumber: string
 ): { success: boolean; user?: MantriUser; error?: string } {
   if (typeof window === "undefined") {
     return { success: false, error: "Window undefined" };
@@ -599,6 +598,53 @@ export function generateWhatsAppUrl(
 Kami telah menerima rencana usaha Anda untuk "${businessTitle}" melalui platform UsahaQita. Kami sangat mengapresiasi kesiapan rencana usaha dan kalkulasi kelayakan yang telah Anda susun.
 
 Apakah kami boleh mendiskusikan jadwal singkat untuk perkenalan atau survei lokasi usaha Anda? Terima kasih.`;
+
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+}
+
+// 5. WhatsApp Direct Link Generator dari Calon Pengusaha ke Mantri BRI
+export interface UserToMantriWhatsAppParams {
+  mantriPhone: string;
+  mantriName: string;
+  unitName?: string;
+  applicantName: string;
+  businessTitle: string;
+  city: string;
+  leadId: string;
+  availableCapital?: number;
+  capitalDeficit?: number;
+}
+
+export function generateUserToMantriWhatsAppUrl(params: UserToMantriWhatsAppParams): string {
+  // Format nomor HP ke 62xxxxxxxxx
+  let cleanPhone = (params.mantriPhone || "").replace(/[^0-9]/g, "");
+  if (cleanPhone.startsWith("0")) {
+    cleanPhone = "62" + cleanPhone.slice(1);
+  } else if (cleanPhone.startsWith("8")) {
+    cleanPhone = "62" + cleanPhone;
+  }
+
+  const formatRupiah = (val?: number) => {
+    if (!val) return "Rp 0";
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(val);
+  };
+
+  const unitText = params.unitName ? ` (${params.unitName})` : "";
+  const message = `Halo Bapak/Ibu ${params.mantriName}${unitText},
+
+Perkenalkan saya ${params.applicantName} dari ${params.city}. Saya telah menyusun rencana usaha untuk "${params.businessTitle}" melalui platform UsahaQita dengan No. Registrasi: *${params.leadId}*.
+
+Ringkasan Rencana Usaha:
+- Modal Sendiri: ${formatRupiah(params.availableCapital)}
+- Kebutuhan Pembiayaan/Kemitraan: ${formatRupiah(params.capitalDeficit)}
+
+Saya ingin berkonsultasi mengenai kelayakan usaha dan program kemitraan/pendampingan permodalan (KUR Mikro) yang tepat di unit kerja Bapak/Ibu.
+
+Mohon arahan dan kesediaan waktunya. Terima kasih banyak!`;
 
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 }

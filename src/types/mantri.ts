@@ -11,6 +11,7 @@ export interface MantriUser {
   id: string;
   name: string;
   personalNumber: string; // e.g. "00263626"
+  phoneNumber?: string; // e.g. "081234567891"
   unitName: string; // e.g. "BRI Unit Dinoyo"
   branchOffice: string; // e.g. "KC Malang Soekarno Hatta"
   role: "MANTRI" | "SUPERVISOR" | "KANCA_HEAD";
@@ -55,6 +56,7 @@ export interface ConsultationLead {
   status: PipelineStatus;
   assignedMantriId?: string;
   assignedMantriName?: string;
+  assignedMantriPhone?: string;
   assignedBranch?: string;
   assignedUnit?: string;
   creditAssessment?: CreditSimulation;
