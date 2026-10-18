@@ -336,13 +336,14 @@ export async function fetchLeadsFromDatabase(): Promise<ConsultationLead[]> {
     const res = await fetch("/api/leads", { cache: "no-store" });
     if (res.ok) {
       const json = await res.json();
-      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-        localStorage.setItem(MANTRI_LEADS_KEY, JSON.stringify(json.data));
-        const normalized = (json.data as Record<string, unknown>[]).map(normalizeLead); localStorage.setItem(MANTRI_LEADS_KEY, JSON.stringify(normalized)); return normalized;
+      if (json.success && Array.isArray(json.data)) {
+        const normalized = (json.data as Record<string, unknown>[]).map(normalizeLead);
+        localStorage.setItem(MANTRI_LEADS_KEY, JSON.stringify(normalized));
+        return normalized;
       }
     }
   } catch (err) {
-    console.warn("Could not fetch leads from MySQL API, falling back to local storage:", err);
+    console.warn("Could not fetch leads from API, falling back to local storage:", err);
   }
   return getConsultationLeads();
 }
@@ -370,14 +371,66 @@ export function getLeadById(id: string): ConsultationLead | undefined {
 }
 
 export async function getLeadByIdAsync(id: string): Promise<ConsultationLead | undefined> {
-  const local = getLeadById(id);
-  if (typeof window === "undefined") return local;
+  if (typeof window === "undefined") return getLeadById(id);
   try {
-    const leads = await fetchLeadsFromDatabase();
-    return leads.find((l) => l.id.toLowerCase() === id.toLowerCase()) || local;
-  } catch {
-    return local;
+    const res = await fetch(`/api/leads/${encodeURIComponent(id)}`, { cache: "no-store" });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.data) {
+        const fresh = normalizeLead(json.data);
+        const leads = getConsultationLeads();
+        const idx = leads.findIndex((l) => l.id.toLowerCase() === id.toLowerCase());
+        if (idx !== -1) {
+          leads[idx] = fresh;
+        } else {
+          leads.push(fresh);
+        }
+        localStorage.setItem(MANTRI_LEADS_KEY, JSON.stringify(leads));
+        return fresh;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not fetch single lead from API:", err);
   }
+  return getLeadById(id);
+}
+
+export async function updateLeadStatusAsync(
+  id: string,
+  status: PipelineStatus,
+  surveyNotes?: string,
+  creditAssessment?: CreditSimulation
+): Promise<ConsultationLead | null> {
+  const local = updateLeadStatus(id, status, surveyNotes, creditAssessment);
+  if (typeof window === "undefined") return local;
+
+  try {
+    const res = await fetch(`/api/leads/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status,
+        surveyNotes,
+        creditAssessment,
+      }),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.data) {
+        const fresh = normalizeLead(json.data);
+        const leads = getConsultationLeads();
+        const idx = leads.findIndex((l) => l.id.toLowerCase() === id.toLowerCase());
+        if (idx !== -1) {
+          leads[idx] = fresh;
+          localStorage.setItem(MANTRI_LEADS_KEY, JSON.stringify(leads));
+        }
+        return fresh;
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to patch lead status to API:", err);
+  }
+  return local;
 }
 
 

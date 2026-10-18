@@ -10,10 +10,10 @@ export type PipelineStatus =
 export interface MantriUser {
   id: string;
   name: string;
-  personalNumber: string; // e.g. "BRI-882041"
-  unitName: string; // e.g. "BRI Unit Dinoyo - KC Malang Soekarno Hatta"
+  personalNumber: string; // e.g. "00263626"
+  unitName: string; // e.g. "BRI Unit Dinoyo"
   branchOffice: string; // e.g. "KC Malang Soekarno Hatta"
-  role: "MANTRI" | "SUPERVISOR";
+  role: "MANTRI" | "SUPERVISOR" | "KANCA_HEAD";
   assignedAreas: string[];
 }
 
@@ -54,6 +54,9 @@ export interface ConsultationLead {
   };
   status: PipelineStatus;
   assignedMantriId?: string;
+  assignedMantriName?: string;
+  assignedBranch?: string;
+  assignedUnit?: string;
   creditAssessment?: CreditSimulation;
   surveyNotes?: string;
   lastUpdated: string;

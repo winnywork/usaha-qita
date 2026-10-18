@@ -22,7 +22,7 @@ import {
   getCurrentMantri,
   getLeadById,
   getLeadByIdAsync,
-  updateLeadStatus,
+  updateLeadStatusAsync,
   calculateKurAssessment,
   generateWhatsAppUrl,
 } from "@/services/mantriService";
@@ -48,6 +48,7 @@ export default function MantriProspekDetailPage({ params }: PageProps) {
   const [loanAmount, setLoanAmount] = useState<number>(10000000);
   const [tenorMonths, setTenorMonths] = useState<12 | 24 | 36>(12);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const active = getCurrentMantri();
@@ -122,13 +123,19 @@ export default function MantriProspekDetailPage({ params }: PageProps) {
     lead.financialMetrics?.monthlyNetProfit || 0
   );
 
-  const handleSaveAssessment = (e: React.FormEvent) => {
+  const handleSaveAssessment = async (e: React.FormEvent) => {
     e.preventDefault();
-    const updated = updateLeadStatus(lead.id, status, surveyNotes, currentAssessment);
-    if (updated) {
-      setLead(updated);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+    if (!lead) return;
+    setIsSaving(true);
+    try {
+      const updated = await updateLeadStatusAsync(lead.id, status, surveyNotes, currentAssessment);
+      if (updated) {
+        setLead(updated);
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 4000);
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -186,7 +193,7 @@ export default function MantriProspekDetailPage({ params }: PageProps) {
         {saveSuccess && (
           <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-semibold flex items-center gap-2 animate-in fade-in shadow-xs">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>Perubahan status pipeline dan asesmen kredit berhasil disimpan ke sistem!</span>
+            <span>Perubahan status pipeline, hasil asesmen, dan catatan survei berhasil disinkronkan ke Google Cloud Firestore!</span>
           </div>
         )}
 
@@ -436,10 +443,20 @@ export default function MantriProspekDetailPage({ params }: PageProps) {
                   type="submit"
                   variant="primary"
                   size="md"
-                  className="w-full bg-brand-primary hover:bg-brand-dark text-white font-bold text-xs py-2.5 rounded-xl shadow-md shadow-brand-primary/25 flex items-center justify-center gap-2"
+                  disabled={isSaving}
+                  className="w-full bg-brand-primary hover:bg-brand-dark text-white font-bold text-xs py-2.5 rounded-xl shadow-md shadow-brand-primary/25 flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  <Save className="w-4 h-4" />
-                  <span>Simpan Hasil Asesmen Mantri</span>
+                  {isSaving ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Menyimpan ke Cloud Firestore...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Simpan Hasil Asesmen Mantri</span>
+                    </>
+                  )}
                 </Button>
               </form>
             </Card>
