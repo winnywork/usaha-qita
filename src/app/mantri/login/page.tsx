@@ -4,33 +4,33 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  ShieldCheck,
   Building2,
   Lock,
   ArrowRight,
-  ArrowLeft,
+  ShieldCheck,
   AlertCircle,
-  Sparkles,
+  ArrowLeft,
+  Eye,
+  EyeOff,
   UserCheck,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { loginMantriAsync, getCurrentMantri, DEMO_MANTRI_ACCOUNTS } from "@/services/mantriService";
 import { useLanguage } from "@/context/LanguageContext";
+import { loginMantriAsync, getCurrentMantri } from "@/services/mantriService";
 
 export default function MantriLoginPage() {
   const router = useRouter();
   const { language } = useLanguage();
-
   const [personalNumber, setPersonalNumber] = useState("");
   const [pin, setPin] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [showPin, setShowPin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // If already logged in, redirect straight to dashboard
   useEffect(() => {
-    const active = getCurrentMantri();
-    if (active) {
+    const existing = getCurrentMantri();
+    if (existing) {
       router.push("/mantri/dashboard");
     }
   }, [router]);
@@ -38,36 +38,26 @@ export default function MantriLoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!personalNumber.trim() || !pin.trim()) {
+      setError("Personal Number (NIP) dan PIN/Sandi wajib diisi.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const res = await loginMantriAsync(personalNumber, pin);
+      const res = await loginMantriAsync(personalNumber.trim(), pin.trim());
       setIsLoading(false);
+
       if (res.success) {
         router.push("/mantri/dashboard");
       } else {
-        setError(res.error || "Gagal masuk. Periksa kembali NIP dan PIN Anda.");
+        setError(res.error || "Personal Number (NIP) atau PIN Mantri tidak terdaftar.");
       }
     } catch {
       setIsLoading(false);
-      setError("Terjadi kesalahan koneksi server database. Silakan coba lagi.");
-    }
-  };
-
-  const handleQuickDemo = async (nip: string, demoPin: string) => {
-    setPersonalNumber(nip);
-    setPin(demoPin);
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      const res = await loginMantriAsync(nip, demoPin);
-      setIsLoading(false);
-      if (res.success) {
-        router.push("/mantri/dashboard");
-      }
-    } catch {
-      setIsLoading(false);
+      setError("Terjadi kendala koneksi ke server verifikasi. Silakan coba kembali.");
     }
   };
 
@@ -107,14 +97,14 @@ export default function MantriLoginPage() {
                 Portal Mantri BRI
               </h1>
               <p className="text-xs text-slate-500 mt-1">
-                Sistem Monitoring & Pendampingan Calon Debitur Mikro UsahaQita
+                Sistem Monitoring & Pendampingan Debitur Mikro UsahaQita
               </p>
             </div>
           </div>
 
           {/* Error Banner */}
           {error && (
-            <div className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2 animate-in fade-in">
+            <div className="mt-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5 animate-in fade-in">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
               <span>{error}</span>
             </div>
@@ -124,8 +114,8 @@ export default function MantriLoginPage() {
           <form onSubmit={handleLogin} className="space-y-4 mt-6">
             <div className="space-y-1.5 text-left">
               <label className="text-xs font-semibold text-slate-700 flex items-center justify-between">
-                <span>Personal Number / NIP Mantri</span>
-                <span className="text-[10px] text-slate-500">Contoh: BRI-882041</span>
+                <span>Personal Number (NIP) Mantri</span>
+                <span className="text-[10px] text-slate-400">Terdaftar di Basis Data</span>
               </label>
               <div className="relative">
                 <input
@@ -134,27 +124,33 @@ export default function MantriLoginPage() {
                   value={personalNumber}
                   onChange={(e) => setPersonalNumber(e.target.value)}
                   placeholder="BRI-XXXXXX"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:bg-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all uppercase"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:bg-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all uppercase font-mono"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5 text-left">
               <label className="text-xs font-semibold text-slate-700 flex items-center justify-between">
-                <span>PIN Keamanan / Sandi</span>
-                <span className="text-[10px] text-slate-500">6 Digit Angka</span>
+                <span>PIN / Sandi Akses</span>
+                <span className="text-[10px] text-slate-400">Otentikasi Kredensial</span>
               </label>
               <div className="relative">
                 <input
-                  type="password"
+                  type={showPin ? "text" : "password"}
                   required
-                  maxLength={12}
+                  maxLength={20}
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
                   placeholder="••••••"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:bg-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all tracking-widest"
+                  className="w-full px-4 pr-10 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:bg-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all tracking-wider font-mono"
                 />
-                <Lock className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
+                <button
+                  type="button"
+                  onClick={() => setShowPin(!showPin)}
+                  className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
@@ -163,10 +159,13 @@ export default function MantriLoginPage() {
               variant="primary"
               size="lg"
               disabled={isLoading}
-              className="w-full bg-brand-primary hover:bg-brand-dark text-white font-bold text-sm shadow-md shadow-brand-primary/25 rounded-xl mt-2"
+              className="w-full bg-brand-primary hover:bg-brand-dark text-white font-bold text-sm shadow-md shadow-brand-primary/25 rounded-xl mt-2 h-11"
             >
               {isLoading ? (
-                <span>Memverifikasi Kredensial...</span>
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Memverifikasi Basis Data...</span>
+                </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">
                   <span>Masuk ke Dashboard Mantri</span>
@@ -176,36 +175,11 @@ export default function MantriLoginPage() {
             </Button>
           </form>
 
-          {/* Quick Demo Login Box */}
-          <div className="mt-6 pt-5 border-t border-slate-100 space-y-3 text-left">
-            <div className="flex items-center gap-1.5 text-xs text-brand-primary font-bold">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>Akses Cepat Pengujian (Demo Accounts):</span>
-            </div>
-
-            <div className="space-y-2">
-              {DEMO_MANTRI_ACCOUNTS.map((acc) => (
-                <button
-                  key={acc.id}
-                  type="button"
-                  onClick={() => handleQuickDemo(acc.personalNumber, acc.pin)}
-                  className="w-full p-2.5 rounded-xl bg-slate-50 hover:bg-brand-light/70 border border-slate-200 hover:border-brand-primary/40 text-left transition-all group flex items-center justify-between shadow-2xs"
-                >
-                  <div className="space-y-0.5">
-                    <div className="text-xs font-bold text-slate-800 group-hover:text-brand-primary transition-colors flex items-center gap-1.5">
-                      <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>{acc.name}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500">
-                      {acc.unitName} • <span className="font-mono text-slate-700">{acc.personalNumber}</span>
-                    </p>
-                  </div>
-                  <span className="text-[10px] font-bold px-2 py-1 rounded bg-white text-brand-primary border border-brand-accent/50 group-hover:bg-brand-primary group-hover:text-white transition-all shadow-2xs">
-                    1-Click Masuk
-                  </span>
-                </button>
-              ))}
-            </div>
+          {/* Info Akun & Bantuan */}
+          <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+            <p className="text-[11px] text-slate-500">
+              Belum terdaftar atau lupa PIN? Hubungi Administrator melalui Pusat Kontrol untuk reset akun.
+            </p>
           </div>
         </Card>
 

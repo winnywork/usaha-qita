@@ -97,33 +97,12 @@ export async function GET() {
     console.warn("MySQL Mantri fetch failed:", dbErr);
   }
 
-  // 3. Fallback dummy jika DB belum tersedia
+  // 3. Jika basis data belum terisi, kembalikan daftar kosong (tanpa akun tiruan)
   return NextResponse.json({
     success: true,
-    source: "fallback",
-    count: 2,
-    data: [
-      {
-        id: "mantri-01",
-        name: "Budi Santoso, S.E.",
-        personalNumber: "BRI-882041",
-        pin: "123456",
-        unitName: "BRI Unit Dinoyo",
-        branchOffice: "KC Malang Soekarno Hatta",
-        role: "MANTRI",
-        assignedAreas: ["Dinoyo", "Tlogomas", "Ketawanggede", "Merjosari"],
-      },
-      {
-        id: "mantri-02",
-        name: "Siti Rahmawati, M.M.",
-        personalNumber: "BRI-882042",
-        pin: "123456",
-        unitName: "BRI Unit Lowokwaru",
-        branchOffice: "KC Malang Soekarno Hatta",
-        role: "MANTRI",
-        assignedAreas: ["Lowokwaru", "Jatimulyo", "Mojolangu", "Tulusrejo"],
-      },
-    ],
+    source: "database",
+    count: 0,
+    data: [],
   });
 }
 

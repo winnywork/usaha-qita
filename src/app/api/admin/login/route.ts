@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFirestoreDb } from "@/lib/firebaseAdmin";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
     const cleanUsername = String(username).trim();
     const cleanPassword = String(password).trim();
 
-    // 1. Cek lewat Firebase Cloud Firestore
+    // 1. Verifikasi langsung ke basis data Google Cloud Firestore (koleksi admin_users)
     try {
       const firestore = getFirestoreDb();
       if (firestore) {
@@ -39,38 +40,50 @@ export async function POST(req: NextRequest) {
         }
       }
     } catch (fErr) {
-      console.warn("Firestore admin login check failed, falling back:", fErr);
+      console.warn("Firestore admin login check failed, trying MySQL:", fErr);
     }
 
-    // 2. Fallback Root Superadmin (superadmin / P@ssw0rd)
-    if (cleanUsername === "superadmin" && cleanPassword === "P@ssw0rd") {
-      // Auto-sync ke Firestore jika belum ada
-      try {
-        const firestore = getFirestoreDb();
-        if (firestore) {
-          await firestore.collection("admin_users").doc("superadmin").set({
-            username: "superadmin",
-            password: "P@ssw0rd",
-            name: "Super Administrator",
-            role: "SUPERADMIN",
-            updatedAt: new Date().toISOString(),
-          }, { merge: true });
-        }
-      } catch (syncErr) {
-        console.warn("Auto-sync superadmin to Firestore failed:", syncErr);
-      }
+    // 2. Verifikasi ke basis data MySQL jika Firestore tidak aktif
+    try {
+      const adminInDb = await prisma.user.findFirst({
+        where: {
+          email: cleanUsername,
+          riskTolerance: "SUPERADMIN",
+        },
+      });
 
+      if (adminInDb && adminInDb.specificLocation === cleanPassword) {
+        return NextResponse.json({
+          success: true,
+          source: "database",
+          user: {
+            username: cleanUsername,
+            name: adminInDb.name,
+            role: "SUPERADMIN",
+          },
+        });
+      }
+    } catch (dbErr) {
+      console.warn("MySQL admin check skipped:", dbErr);
+    }
+
+    // 3. Fallback parameterisasi dari environment variable lokal (.env)
+    const envAdminUser = process.env.ADMIN_USERNAME || "superadmin";
+    const envAdminPass = process.env.ADMIN_PASSWORD || process.env.INITIAL_ADMIN_PASSWORD;
+
+    if (envAdminPass && cleanUsername === envAdminUser && cleanPassword === envAdminPass) {
       return NextResponse.json({
         success: true,
-        source: "master_credential",
+        source: "env_parameterized",
         user: {
-          username: "superadmin",
+          username: cleanUsername,
           name: "Super Administrator",
           role: "SUPERADMIN",
         },
       });
     }
 
+    // Kredensial tidak cocok
     return NextResponse.json(
       { success: false, error: "Username atau password administrator salah." },
       { status: 401 }

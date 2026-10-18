@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import {
   calculateKurAssessment,
-  loginMantri,
+  loginMantriAsync,
   logoutMantri,
   getCurrentMantri,
   generateWhatsAppUrl,
-  DEMO_MANTRI_ACCOUNTS,
 } from "./mantriService";
 
 // Mock localStorage for Node test environment
@@ -65,25 +64,70 @@ describe("Mantri BRI Service & KUR Assessment Engine", () => {
   });
 
   describe("Autentikasi & Sesi Mantri", () => {
-    it("berhasil login dengan kredensial demo Mantri valid", () => {
-      const demo = DEMO_MANTRI_ACCOUNTS[0];
-      const result = loginMantri(demo.personalNumber, demo.pin);
+    it("berhasil memvalidasi login async dan menyimpan sesi jika kredensial terverifikasi oleh server", async () => {
+      const originalFetch = global.fetch;
+      
+      global.fetch = async () =>
+        ({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            success: true,
+            mantri: {
+              id: "mantri-01",
+              name: "Budi Santoso, S.E.",
+              personalNumber: "BRI-882041",
+              unitName: "BRI Unit Dinoyo",
+              branchOffice: "KC Malang Soekarno Hatta",
+              role: "MANTRI",
+              assignedAreas: ["Dinoyo"],
+            },
+          }),
+        } as unknown as Response);
+
+      const result = await loginMantriAsync("BRI-882041", "dummy-pin");
       expect(result.success).toBe(true);
-      expect(result.user?.name).toBe(demo.name);
+      expect(result.user?.personalNumber).toBe("BRI-882041");
 
       const active = getCurrentMantri();
-      expect(active?.personalNumber).toBe(demo.personalNumber);
+      expect(active?.name).toBe("Budi Santoso, S.E.");
+
+      global.fetch = originalFetch;
     });
 
-    it("menolak login jika NIP atau PIN salah", () => {
-      const result = loginMantri("BRI-999999", "wrongpin");
+    it("menolak login jika server merespons kredensial tidak valid", async () => {
+      const originalFetch = global.fetch;
+      
+      global.fetch = async () =>
+        ({
+          ok: false,
+          status: 401,
+          json: async () => ({
+            success: false,
+            error: "Personal Number (NIP) atau PIN salah.",
+          }),
+        } as unknown as Response);
+
+      const result = await loginMantriAsync("BRI-999999", "wrongpin");
       expect(result.success).toBe(false);
-      expect(getCurrentMantri()).toBeNull();
+      expect(result.error).toContain("salah");
+
+      global.fetch = originalFetch;
     });
 
     it("berhasil logout dan menghapus sesi tersimpan", () => {
-      const demo = DEMO_MANTRI_ACCOUNTS[0];
-      loginMantri(demo.personalNumber, demo.pin);
+      localStorageMock.setItem(
+        "usahaqita_mantri_session",
+        JSON.stringify({
+          id: "mantri-01",
+          name: "Budi Santoso",
+          personalNumber: "BRI-882041",
+          unitName: "BRI Unit Dinoyo",
+          branchOffice: "KC Malang",
+          role: "MANTRI",
+          assignedAreas: [],
+        })
+      );
       expect(getCurrentMantri()).not.toBeNull();
 
       logoutMantri();

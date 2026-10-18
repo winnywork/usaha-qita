@@ -5,28 +5,7 @@ import { businessOpportunities } from "@/data/opportunities";
 const MANTRI_SESSION_KEY = "usahaqita_mantri_session";
 const MANTRI_LEADS_KEY = "usahaqita_consultation_leads";
 
-export const DEMO_MANTRI_ACCOUNTS: (MantriUser & { pin: string })[] = [
-  {
-    id: "mantri-01",
-    name: "Budi Santoso, S.E.",
-    personalNumber: "BRI-882041",
-    pin: "123456",
-    unitName: "BRI Unit Dinoyo",
-    branchOffice: "KC Malang Soekarno Hatta",
-    role: "MANTRI",
-    assignedAreas: ["Dinoyo", "Tlogomas", "Ketawanggede", "Merjosari"],
-  },
-  {
-    id: "mantri-02",
-    name: "Siti Rahmawati, M.M.",
-    personalNumber: "BRI-882042",
-    pin: "123456",
-    unitName: "BRI Unit Lowokwaru",
-    branchOffice: "KC Malang Soekarno Hatta",
-    role: "MANTRI",
-    assignedAreas: ["Lowokwaru", "Jatimulyo", "Mojolangu", "Tulusrejo"],
-  },
-];
+// Kredensial Mantri dikelola secara dinamis di basis data cloud.
 
 // Seed initial realistic leads using opportunities dataset
 function getInitialMockLeads(): ConsultationLead[] {
@@ -206,54 +185,60 @@ export function loginMantri(
   }
 
   const cleanNip = personalNumber.trim().toUpperCase();
-  const found = DEMO_MANTRI_ACCOUNTS.find(
-    (acc) => acc.personalNumber.toUpperCase() === cleanNip && acc.pin === pin.trim()
-  );
-
-  if (!found) {
-    return {
-      success: false,
-      error: "Personal Number (NIP) atau PIN tidak valid. Cek kredensial demo.",
-    };
+  const rawSession = localStorage.getItem(MANTRI_SESSION_KEY);
+  if (rawSession) {
+    try {
+      const active = JSON.parse(rawSession) as MantriUser;
+      if (active.personalNumber.toUpperCase() === cleanNip) {
+        return { success: true, user: active };
+      }
+    } catch {
+      // ignore
+    }
   }
 
-  const mantriUser: MantriUser = {
-    id: found.id,
-    name: found.name,
-    personalNumber: found.personalNumber,
-    unitName: found.unitName,
-    branchOffice: found.branchOffice,
-    role: found.role,
-    assignedAreas: found.assignedAreas,
+  return {
+    success: false,
+    error: "Autentikasi memerlukan panggilan verifikasi langsung ke server basis data.",
   };
-  localStorage.setItem(MANTRI_SESSION_KEY, JSON.stringify(mantriUser));
-  return { success: true, user: mantriUser };
 }
-
 
 export async function loginMantriAsync(
   personalNumber: string,
   pin: string
 ): Promise<{ success: boolean; user?: MantriUser; error?: string }> {
-  if (typeof window !== "undefined") {
-    try {
-      const res = await fetch("/api/mantri/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ personalNumber, pin }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success && data.mantri) {
-        localStorage.setItem(MANTRI_SESSION_KEY, JSON.stringify(data.mantri));
-        return { success: true, user: data.mantri };
-      } else if (res.status === 401 || res.status === 400) {
-        return { success: false, error: data.error || "Personal Number atau PIN salah." };
-      }
-    } catch (err) {
-      console.warn("Could not connect to /api/mantri/login, fallback to local:", err);
-    }
+  if (typeof window === "undefined") {
+    return { success: false, error: "Window undefined" };
   }
-  return loginMantri(personalNumber, pin);
+
+  const cleanPN = personalNumber.trim().toUpperCase();
+  const cleanPin = pin.trim();
+
+  try {
+    const res = await fetch("/api/mantri/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ personalNumber: cleanPN, pin: cleanPin }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success && data.mantri) {
+      localStorage.setItem(MANTRI_SESSION_KEY, JSON.stringify(data.mantri));
+      return { success: true, user: data.mantri };
+    }
+
+    return {
+      success: false,
+      error: data.error || "Personal Number (NIP) atau PIN Mantri salah. Akses ditolak.",
+    };
+  } catch (err) {
+    console.error("Gagal menghubungkan ke server autentikasi Mantri:", err);
+    return {
+      success: false,
+      error: "Gagal menghubungi server verifikasi autentikasi. Pastikan koneksi internet stabil.",
+    };
+  }
 }
 
 export function logoutMantri(): void {
