@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Compass, ShieldAlert } from "lucide-react";
+import { Compass, ShieldAlert, Building2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 export function Footer() {
@@ -57,6 +57,15 @@ export function Footer() {
                   {t.nav.roadmapUsaha}
                 </Link>
               </li>
+              <li className="pt-2 border-t border-white/10 mt-2">
+                <Link
+                  href="/mantri/login"
+                  className="inline-flex items-center gap-1.5 text-blue-200 hover:text-white transition-colors font-medium text-xs group"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-brand-accent group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Portal Petugas Mantri BRI</span>
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -75,10 +84,20 @@ export function Footer() {
           <p>{t.footer.disclaimerNotice}</p>
         </div>
 
-        {/* Copyright */}
+        {/* Copyright & Mantri Portal Access */}
         <div className="pt-6 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-blue-200">
           <p>&copy; {new Date().getFullYear()} Usaha Qita. {t.footer.rights}</p>
-          <p>{t.footer.subRights}</p>
+          <div className="flex items-center gap-3">
+            <p>{t.footer.subRights}</p>
+            <span className="text-white/20 hidden sm:inline">•</span>
+            <Link
+              href="/mantri/login"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-blue-100 hover:text-white transition-colors border border-white/15 text-[11px] font-semibold"
+            >
+              <Building2 className="w-3 h-3 text-brand-accent" />
+              <span>Portal Mantri</span>
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

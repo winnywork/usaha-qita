@@ -5,14 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Building2,
-  Lock,
   ArrowRight,
   ShieldCheck,
   AlertCircle,
   ArrowLeft,
   Eye,
   EyeOff,
-  UserCheck,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";

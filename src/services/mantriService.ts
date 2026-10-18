@@ -178,7 +178,7 @@ export function getCurrentMantri(): MantriUser | null {
 
 export function loginMantri(
   personalNumber: string,
-  pin: string
+  _pin?: string
 ): { success: boolean; user?: MantriUser; error?: string } {
   if (typeof window === "undefined") {
     return { success: false, error: "Window undefined" };
