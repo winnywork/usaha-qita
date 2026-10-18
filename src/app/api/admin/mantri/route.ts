@@ -51,6 +51,7 @@ export async function GET() {
           success: true,
           source: "firebase_firestore",
           count: list.length,
+          users: list,
           data: list,
         });
       }
@@ -91,17 +92,19 @@ export async function GET() {
       success: true,
       source: "database",
       count: list.length,
+      users: list,
       data: list,
     });
   } catch (dbErr) {
     console.warn("MySQL Mantri fetch failed:", dbErr);
   }
 
-  // 3. Jika basis data belum terisi, kembalikan daftar kosong (tanpa akun tiruan)
+  // 3. Jika basis data belum terisi, kembalikan daftar kosong
   return NextResponse.json({
     success: true,
     source: "database",
     count: 0,
+    users: [],
     data: [],
   });
 }
@@ -148,6 +151,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
           success: true,
           source: "firebase_firestore",
+          user: newMantri,
           data: newMantri,
         });
       }
@@ -173,6 +177,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         source: "database",
+        user: {
+          ...newMantri,
+          id: created.id,
+        },
         data: {
           ...newMantri,
           id: created.id,

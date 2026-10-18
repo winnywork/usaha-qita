@@ -64,9 +64,10 @@ export function MantriModal({ mode, initialData, onClose, onSuccess }: MantriMod
       });
 
       const data = await res.json();
+      const savedUser = data.user || data.data;
 
-      if (data.success && data.user) {
-        onSuccess(data.user);
+      if (data.success && savedUser) {
+        onSuccess(savedUser);
       } else {
         setError(data.error || "Gagal menyimpan data Mantri.");
       }

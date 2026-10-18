@@ -74,8 +74,9 @@ export default function AdminDashboardPage() {
     try {
       const res = await fetch("/api/admin/mantri");
       const data = await res.json();
-      if (data.success && Array.isArray(data.users)) {
-        setMantriList(data.users);
+      const list = data.users || data.data || [];
+      if (data.success && Array.isArray(list)) {
+        setMantriList(list);
       } else {
         setNotification({
           type: "error",
