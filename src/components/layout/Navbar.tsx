@@ -24,7 +24,6 @@ export function Navbar() {
 
   const navLinks = [
     { href: "/", label: t.nav.beranda },
-    { href: "/onboarding", label: t.nav.mulaiRencana },
     { href: "/rekomendasi", label: t.nav.peluangUsaha },
     { href: "/analisis", label: t.nav.analisisFinansial },
     { href: "/roadmap", label: t.nav.roadmapUsaha },
@@ -38,34 +37,34 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-slate-200">
+    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo & Identity */}
-          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center text-white shadow-md shadow-blue-900/15 group-hover:scale-105 transition-transform">
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0 py-1">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center text-white shadow-md shadow-blue-900/15 group-hover:scale-105 transition-transform shrink-0">
               <Compass className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-base sm:text-lg font-bold tracking-tight text-slate-900 leading-tight">
+            <div className="flex flex-col justify-center">
+              <span className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 leading-none">
                 Usaha Qita
               </span>
-              <span className="text-[10px] sm:text-xs font-bold text-brand-secondary uppercase tracking-wider">
+              <span className="text-[10px] sm:text-[11px] font-bold text-brand-secondary uppercase tracking-wider mt-0.5">
                 {t.nav.brandConcept}
               </span>
             </div>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden xl:flex items-center gap-1">
+          {/* Desktop Nav Links - Centered & Clean */}
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm transition-all ${
                   isActive(link.href)
-                    ? "bg-brand-light text-brand-primary border border-brand-accent/40"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                    ? "bg-brand-light text-brand-primary border border-brand-accent/40 shadow-2xs font-bold"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-semibold"
                 }`}
               >
                 {link.label}
@@ -73,32 +72,34 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* Right Action / Language Switcher & CTA & Mantri Portal Link */}
-          <div className="hidden sm:flex items-center gap-2.5 shrink-0">
+          {/* Desktop Right Action Bar: Mantri Portal + Language + CTA Button (All aligned vertically at 38px) */}
+          <div className="hidden lg:flex items-center gap-2.5 xl:gap-3 shrink-0">
             {/* Quick Access to Mantri Portal */}
             <Link
               href="/mantri/login"
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-blue-900 bg-blue-50/90 hover:bg-blue-100 border border-blue-200/90 flex items-center gap-1.5 transition-colors shadow-2xs"
+              className="h-[38px] px-3.5 rounded-xl text-xs font-bold text-blue-900 bg-blue-50/90 hover:bg-blue-100 border border-blue-200/90 flex items-center gap-1.5 transition-colors shadow-2xs shrink-0"
               title="Akses Portal Monitoring Petugas Mantri BRI"
             >
               <Building2 className="w-3.5 h-3.5 text-blue-700" />
               <span>Portal Mantri</span>
             </Link>
 
-            <LanguageSwitcher />
+            <div className="h-[38px] flex items-center shrink-0">
+              <LanguageSwitcher />
+            </div>
 
-            <Link href="/onboarding">
-              <Button size="sm" variant="accent" rightIcon={<ArrowRight className="w-4 h-4" />}>
+            <Link href="/onboarding" className="shrink-0">
+              <Button size="sm" variant="accent" className="h-[38px] px-4 text-xs font-bold shadow-sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
                 {t.nav.planButton}
               </Button>
             </Link>
           </div>
 
-          {/* Mobile Right Bar: Language Switcher + Hamburger */}
-          <div className="flex items-center gap-2 xl:hidden">
+          {/* Mobile Right Bar: Mantri Pill + Language Switcher + Hamburger (Active only below lg) */}
+          <div className="flex lg:hidden items-center gap-2">
             <Link
               href="/mantri/login"
-              className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-blue-900 bg-blue-50 border border-blue-200 flex items-center gap-1"
+              className="h-8 px-2.5 rounded-lg text-[11px] font-bold text-blue-900 bg-blue-50 border border-blue-200 flex items-center gap-1"
             >
               <Building2 className="w-3 h-3 text-blue-700" />
               <span>Mantri</span>
@@ -109,28 +110,28 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors"
               aria-label="Buka menu navigasi"
             >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Drawer Menu (360px - 1280px) */}
+      {/* Mobile Drawer Menu (Visible only below lg when open) */}
       {isOpen && (
-        <div className="xl:hidden border-b border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 animate-in slide-in-from-top-2 duration-150 shadow-lg">
+        <div className="lg:hidden border-b border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 animate-in slide-in-from-top-2 duration-150 shadow-lg">
           <div className="flex flex-col space-y-1">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className={`px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
+                className={`px-4 py-3 rounded-xl text-sm transition-colors ${
                   isActive(link.href)
-                    ? "bg-brand-light text-brand-primary border border-brand-accent/40"
-                    : "text-slate-700 hover:bg-slate-100"
+                    ? "bg-brand-light text-brand-primary border border-brand-accent/40 font-bold"
+                    : "text-slate-700 hover:bg-slate-100 font-semibold"
                 }`}
               >
                 {link.label}
@@ -141,16 +142,16 @@ export function Navbar() {
             <Link
               href="/mantri/login"
               onClick={() => setIsOpen(false)}
-              className="px-4 py-3 rounded-xl text-sm font-bold text-blue-950 bg-blue-50/80 border border-blue-200/80 flex items-center gap-2"
+              className="px-4 py-3 rounded-xl text-sm font-bold text-blue-950 bg-blue-50/80 border border-blue-200/80 flex items-center gap-2 mt-1"
             >
               <Building2 className="w-4 h-4 text-blue-700" />
-              <span>Portal Khusus Mantri BRI (Login Petugas)</span>
+              <span>Portal Monitoring Mantri BRI</span>
             </Link>
           </div>
 
           <div className="pt-2">
             <Link href="/onboarding" onClick={() => setIsOpen(false)} className="w-full block">
-              <Button fullWidth variant="accent" size="md" rightIcon={<ArrowRight className="w-4 h-4" />}>
+              <Button fullWidth variant="accent" size="md" className="h-11 font-bold shadow-sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
                 {t.hero.startBtn}
               </Button>
             </Link>
