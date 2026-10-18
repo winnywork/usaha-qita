@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { MOCK_OPPORTUNITIES } from "@/data/opportunities";
+import { BusinessOpportunity } from "@/types/business";
 import { matchOpportunities, OpportunityMatchResult } from "@/core/matching/matcher";
 import { getUserProfile } from "@/services/storageService";
 import { UserProfile } from "@/types/user";
@@ -25,6 +26,7 @@ import { useLanguage } from "@/context/LanguageContext";
 
 export default function RekomendasiPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [opportunities, setOpportunities] = useState<BusinessOpportunity[]>(MOCK_OPPORTUNITIES);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("semua");
@@ -40,24 +42,53 @@ export default function RekomendasiPage() {
         setSelectedCategory(user.categoryInterest[0]);
       }
     }
-    setIsLoading(false);
+
+    // SWR: Tampilkan data dari local storage terlebih dahulu (0ms render instan)
+    try {
+      const cached = localStorage.getItem("usaha_qita_opportunities");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setOpportunities(parsed);
+          setIsLoading(false);
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    // Ambil data peluang usaha live terkini dari basis data Cloud Firestore / MySQL
+    fetch("/api/opportunities")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setOpportunities(json.data);
+          try {
+            localStorage.setItem("usaha_qita_opportunities", JSON.stringify(json.data));
+          } catch {
+            // ignore
+          }
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch live opportunities:", err))
+      .finally(() => setIsLoading(false));
   }, []);
 
   const matchResults = useMemo(() => {
-    let opportunities = MOCK_OPPORTUNITIES;
+    let oppList = opportunities;
 
     if (selectedCategory !== "semua") {
-      opportunities = opportunities.filter((o) => o.category === selectedCategory);
+      oppList = oppList.filter((o) => o.category === selectedCategory);
     }
 
-    const matched = matchOpportunities(opportunities, profile || {}, searchQuery);
+    const matched = matchOpportunities(oppList, profile || {}, searchQuery);
 
     if (onlyAffordable) {
       return matched.filter((m) => m.isAffordable);
     }
 
     return matched;
-  }, [profile, selectedCategory, searchQuery, onlyAffordable]);
+  }, [opportunities, profile, selectedCategory, searchQuery, onlyAffordable]);
 
   const categories = [
     { id: "semua", label: language === "en" ? "All Categories" : "Semua Kategori" },

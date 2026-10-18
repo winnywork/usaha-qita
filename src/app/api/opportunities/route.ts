@@ -5,6 +5,9 @@ import { MOCK_OPPORTUNITIES } from "@/data/opportunities";
 import { BusinessOpportunity, MarketIntelligence, RoadmapStep } from "@/types/business";
 import { BusinessCategory, ExperienceLevel } from "@/types/user";
 import { FinancialAssumptions } from "@/types/finance";
+import { getMemoryCache, setMemoryCache } from "@/lib/cacheUtils";
+
+const CACHE_KEY = "opportunities_list";
 
 interface ParsedTemplateData {
   shortDescription?: string;
@@ -73,8 +76,18 @@ function formatOpportunityFromDb(opp: {
   };
 }
 
-// GET /api/opportunities - Ambil semua peluang usaha dari database MySQL
+// GET /api/opportunities - Ambil semua peluang usaha dari database Cloud Firestore / MySQL
 export async function GET() {
+  const cached = getMemoryCache<BusinessOpportunity[]>(CACHE_KEY, 60000);
+  if (cached) {
+    return NextResponse.json({
+      success: true,
+      source: "memory_cache",
+      count: cached.length,
+      data: cached,
+    });
+  }
+
   try {
     const firestore = getFirestoreDb();
     if (firestore) {
@@ -86,11 +99,14 @@ export async function GET() {
       if (!snap.empty) {
         const list: BusinessOpportunity[] = [];
         snap.forEach((doc) => { list.push(doc.data() as BusinessOpportunity); });
+        setMemoryCache(CACHE_KEY, list);
         return NextResponse.json({
           success: true,
           source: "firebase_firestore",
           count: list.length,
           data: list,
+        }, {
+          headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=120" },
         });
       }
     }

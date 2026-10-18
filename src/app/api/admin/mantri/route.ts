@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFirestoreDb } from "@/lib/firebaseAdmin";
 import { prisma } from "@/lib/prisma";
+import { getMemoryCache, setMemoryCache, invalidateMemoryCache } from "@/lib/cacheUtils";
+
+const CACHE_KEY = "admin_mantri_list";
 
 export interface MantriUserDto {
   id: string;
@@ -18,6 +21,18 @@ export interface MantriUserDto {
 
 // GET /api/admin/mantri - List all Mantri users
 export async function GET() {
+  // Cek cache memori terlebih dahulu (< 1ms)
+  const cached = getMemoryCache<MantriUserDto[]>(CACHE_KEY, 30000);
+  if (cached) {
+    return NextResponse.json({
+      success: true,
+      source: "memory_cache",
+      count: cached.length,
+      users: cached,
+      data: cached,
+    });
+  }
+
   // 1. Coba ambil dari Firestore
   try {
     const firestore = getFirestoreDb();
@@ -48,6 +63,7 @@ export async function GET() {
 
         // Urutkan berdasarkan Nama
         list.sort((a, b) => a.name.localeCompare(b.name));
+        setMemoryCache(CACHE_KEY, list);
 
         return NextResponse.json({
           success: true,
@@ -55,6 +71,8 @@ export async function GET() {
           count: list.length,
           users: list,
           data: list,
+        }, {
+          headers: { "Cache-Control": "private, max-age=15, stale-while-revalidate=60" },
         });
       }
     }
@@ -90,6 +108,8 @@ export async function GET() {
         updatedAt: r.updatedAt.toISOString(),
       };
     });
+
+    setMemoryCache(CACHE_KEY, list);
 
     return NextResponse.json({
       success: true,
@@ -146,6 +166,9 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+
+    // Invalidate cache
+    invalidateMemoryCache(CACHE_KEY);
 
     // 1. Simpan ke Firestore
     try {

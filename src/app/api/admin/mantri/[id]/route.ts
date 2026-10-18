@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFirestoreDb } from "@/lib/firebaseAdmin";
 import { prisma } from "@/lib/prisma";
+import { invalidateMemoryCache } from "@/lib/cacheUtils";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -70,6 +71,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       console.warn("MySQL update failed:", dbErr);
     }
 
+    invalidateMemoryCache("admin_mantri_list");
     if (firestoreSuccess || mysqlSuccess) {
       return NextResponse.json({
         success: true,
@@ -117,6 +119,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       console.warn("MySQL delete failed:", dbErr);
     }
 
+    invalidateMemoryCache("admin_mantri_list");
     if (deleted) {
       return NextResponse.json({
         success: true,

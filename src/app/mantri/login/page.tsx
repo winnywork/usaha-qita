@@ -6,16 +6,45 @@ import Link from "next/link";
 import {
   Building2,
   ArrowRight,
-  ShieldCheck,
   AlertCircle,
-  ArrowLeft,
   Eye,
   EyeOff,
+  ShieldCheck,
+  ArrowLeft,
+  UserCheck,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useLanguage } from "@/context/LanguageContext";
 import { loginMantriAsync, getCurrentMantri } from "@/services/mantriService";
+
+interface QuickAccount {
+  name: string;
+  pn: string;
+  pin: string;
+  unit: string;
+}
+
+const REGISTERED_ACCOUNTS: QuickAccount[] = [
+  {
+    name: "Winny Ardhian Septiko",
+    pn: "00263626",
+    pin: "123456",
+    unit: "BRI Unit Dinoyo",
+  },
+  {
+    name: "Ramdhani Bima A",
+    pn: "00172832",
+    pin: "00000000",
+    unit: "BRI Unit Depok Jaya",
+  },
+  {
+    name: "Reza Aprillia Arshanty",
+    pn: "BRI-882042",
+    pin: "123456",
+    unit: "BRI Unit Lowokwaru",
+  },
+];
 
 export default function MantriLoginPage() {
   const router = useRouter();
@@ -32,6 +61,12 @@ export default function MantriLoginPage() {
       router.push("/mantri/dashboard");
     }
   }, [router]);
+
+  const handleQuickFill = (acc: QuickAccount) => {
+    setPersonalNumber(acc.pn);
+    setPin(acc.pin);
+    setError(null);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +115,7 @@ export default function MantriLoginPage() {
       </div>
 
       {/* Main Login Card */}
-      <div className="max-w-md w-full mx-auto space-y-6">
+      <div className="max-w-md w-full mx-auto space-y-5">
         <Card className="bg-white border-slate-200/90 text-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl shadow-blue-900/5">
           {/* Header Portal */}
           <div className="text-center space-y-3 pb-6 border-b border-slate-100">
@@ -100,6 +135,39 @@ export default function MantriLoginPage() {
             </div>
           </div>
 
+          {/* Quick Account Fill Helper */}
+          <div className="mt-4 p-3 rounded-2xl bg-blue-50/70 border border-blue-200/80 text-left space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-brand-primary flex items-center gap-1">
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>Pilih Akun Mantri Resmi:</span>
+              </span>
+              <span className="text-[10px] text-slate-500">Klik untuk isi otomatis</span>
+            </div>
+            <div className="grid grid-cols-1 gap-1.5">
+              {REGISTERED_ACCOUNTS.map((acc) => (
+                <button
+                  key={acc.pn}
+                  type="button"
+                  onClick={() => handleQuickFill(acc)}
+                  className="w-full text-left p-2 rounded-xl bg-white hover:bg-blue-100/60 border border-blue-200/70 transition-all flex items-center justify-between text-xs group"
+                >
+                  <div>
+                    <span className="font-bold text-slate-900 group-hover:text-brand-primary block leading-tight">
+                      {acc.name}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      PN: {acc.pn} ? {acc.unit}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-brand-primary bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200">
+                    Pilih
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Error Banner */}
           {error && (
             <div className="mt-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5 animate-in fade-in">
@@ -109,7 +177,7 @@ export default function MantriLoginPage() {
           )}
 
           {/* Form Login */}
-          <form onSubmit={handleLogin} className="space-y-4 mt-6">
+          <form onSubmit={handleLogin} className="space-y-4 mt-4">
             <div className="space-y-1.5 text-left">
               <label className="text-xs font-semibold text-slate-700 flex items-center justify-between">
                 <span>Personal Number (NIP) Mantri</span>
@@ -121,7 +189,7 @@ export default function MantriLoginPage() {
                   required
                   value={personalNumber}
                   onChange={(e) => setPersonalNumber(e.target.value)}
-                  placeholder="BRI-XXXXXX"
+                  placeholder="Contoh: 00263626 / BRI-882042"
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:bg-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all uppercase font-mono"
                 />
               </div>
@@ -139,7 +207,7 @@ export default function MantriLoginPage() {
                   maxLength={20}
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
-                  placeholder="••••••"
+                  placeholder="??????"
                   className="w-full px-4 pr-10 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:bg-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all tracking-wider font-mono"
                 />
                 <button
@@ -174,9 +242,9 @@ export default function MantriLoginPage() {
           </form>
 
           {/* Info Akun & Bantuan */}
-          <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+          <div className="mt-5 pt-3 border-t border-slate-100 text-center">
             <p className="text-[11px] text-slate-500">
-              Belum terdaftar atau lupa PIN? Hubungi Administrator melalui Pusat Kontrol untuk reset akun.
+              Personal Number (PN) dapat dimasukkan dengan atau tanpa prefix &apos;BRI-&apos;.
             </p>
           </div>
         </Card>

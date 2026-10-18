@@ -53,7 +53,7 @@ export default function AdminDashboardPage() {
     message: string;
   } | null>(null);
 
-  // 1. Check session auth
+  // 1. Check session auth & load local cache for INSTANT render (0ms)
   useEffect(() => {
     const rawSession = sessionStorage.getItem("admin_session");
     if (!rawSession) {
@@ -65,6 +65,21 @@ export default function AdminDashboardPage() {
       setCurrentUser(user);
     } catch {
       router.replace("/admin/login");
+      return;
+    }
+
+    // SWR: Tampilkan data dari cache lokal secara instan
+    const cachedList = sessionStorage.getItem("admin_mantri_cache");
+    if (cachedList) {
+      try {
+        const parsed = JSON.parse(cachedList);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMantriList(parsed);
+          setIsLoading(false);
+        }
+      } catch {
+        // ignore
+      }
     }
   }, [router]);
 
@@ -77,6 +92,7 @@ export default function AdminDashboardPage() {
       const list = data.users || data.data || [];
       if (data.success && Array.isArray(list)) {
         setMantriList(list);
+        sessionStorage.setItem("admin_mantri_cache", JSON.stringify(list));
       } else {
         setNotification({
           type: "error",

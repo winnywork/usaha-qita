@@ -1,10 +1,16 @@
 import { getApps, initializeApp, cert, App } from "firebase-admin/app";
 import { getFirestore, Firestore } from "firebase-admin/firestore";
 
+let cachedApp: App | null = null;
+let cachedDb: Firestore | null = null;
+
 function getFirebaseAdminApp(): App | null {
+  if (cachedApp) return cachedApp;
+
   const apps = getApps();
   if (apps.length > 0 && apps[0]) {
-    return apps[0];
+    cachedApp = apps[0];
+    return cachedApp;
   }
 
   const projectId =
@@ -17,13 +23,14 @@ function getFirebaseAdminApp(): App | null {
   // 1. Kredensial Service Account lengkap
   if (projectId && clientEmail && privateKey) {
     try {
-      return initializeApp({
+      cachedApp = initializeApp({
         credential: cert({
           projectId,
           clientEmail,
           privateKey,
         }),
       });
+      return cachedApp;
     } catch (e) {
       console.warn("Failed to initialize Firebase Admin with service account:", e);
     }
@@ -32,9 +39,10 @@ function getFirebaseAdminApp(): App | null {
   // 2. Di Google Cloud Run / Firebase App Hosting, Application Default Credentials otomatis aktif
   if (projectId || process.env.K_SERVICE) {
     try {
-      return initializeApp(
+      cachedApp = initializeApp(
         projectId ? { projectId } : undefined
       );
+      return cachedApp;
     } catch (e) {
       console.warn("Failed to initialize Firebase Admin with default credentials:", e);
     }
@@ -44,10 +52,13 @@ function getFirebaseAdminApp(): App | null {
 }
 
 export function getFirestoreDb(): Firestore | null {
+  if (cachedDb) return cachedDb;
+
   try {
     const app = getFirebaseAdminApp();
     if (!app) return null;
-    return getFirestore(app);
+    cachedDb = getFirestore(app);
+    return cachedDb;
   } catch (error) {
     console.warn("Firestore unavailable:", error);
     return null;
