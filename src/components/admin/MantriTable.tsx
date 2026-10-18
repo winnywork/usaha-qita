@@ -24,8 +24,8 @@ export function MantriTable({ users, isLoading, onEdit, onQuickPin, onDelete }: 
 
   if (isLoading) {
     return (
-      <div className="p-12 text-center text-slate-400 text-xs sm:text-sm flex flex-col items-center gap-3">
-        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <div className="p-12 text-center text-slate-500 text-xs sm:text-sm flex flex-col items-center gap-3">
+        <div className="w-6 h-6 border-2 border-[#0857c3] border-t-transparent rounded-full animate-spin" />
         <span>Memuat data petugas dari basis data cloud...</span>
       </div>
     );
@@ -33,9 +33,9 @@ export function MantriTable({ users, isLoading, onEdit, onQuickPin, onDelete }: 
 
   if (users.length === 0) {
     return (
-      <div className="p-12 text-center text-slate-400 space-y-2">
-        <Users className="w-8 h-8 mx-auto text-slate-600" />
-        <p className="text-sm font-semibold text-slate-300">Tidak ada data petugas Mantri ditemukan.</p>
+      <div className="p-12 text-center text-slate-500 space-y-2 bg-white">
+        <Users className="w-8 h-8 mx-auto text-slate-400" />
+        <p className="text-sm font-semibold text-slate-700">Tidak ada data petugas Mantri ditemukan.</p>
         <p className="text-xs text-slate-500">
           Coba sesuaikan kata kunci pencarian atau daftarkan akun Mantri baru.
         </p>
@@ -44,9 +44,9 @@ export function MantriTable({ users, isLoading, onEdit, onQuickPin, onDelete }: 
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto bg-white">
       <table className="w-full text-left text-xs sm:text-sm">
-        <thead className="bg-slate-950/60 text-slate-400 uppercase text-[11px] font-bold tracking-wider border-b border-slate-800">
+        <thead className="bg-slate-50 text-slate-700 uppercase text-[11px] font-bold tracking-wider border-b border-slate-200">
           <tr>
             <th className="py-3.5 px-4">Nama Petugas</th>
             <th className="py-3.5 px-4">Personal Number (PN)</th>
@@ -56,20 +56,20 @@ export function MantriTable({ users, isLoading, onEdit, onQuickPin, onDelete }: 
             <th className="py-3.5 px-4 text-right">Aksi</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-800/80">
+        <tbody className="divide-y divide-slate-100">
           {users.map((mantri) => {
             const isRevealed = !!revealedPins[mantri.id];
             return (
-              <tr key={mantri.id} className="hover:bg-slate-800/40 transition-colors">
+              <tr key={mantri.id} className="hover:bg-blue-50/40 transition-colors">
                 {/* Name & Role */}
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-700 to-indigo-800 text-white flex items-center justify-center font-bold text-xs shrink-0 border border-blue-400/20">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0857c3] to-[#0a6fe0] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
                       {mantri.name.slice(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <span className="font-bold text-white block">{mantri.name}</span>
-                      <span className="text-[10px] font-semibold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 inline-block mt-0.5">
+                      <span className="font-bold text-slate-900 block">{mantri.name}</span>
+                      <span className="text-[10px] font-semibold text-[#0857c3] bg-blue-50 px-2 py-0.5 rounded border border-blue-200 inline-block mt-0.5">
                         {mantri.role || "MANTRI"}
                       </span>
                     </div>
@@ -77,17 +77,17 @@ export function MantriTable({ users, isLoading, onEdit, onQuickPin, onDelete }: 
                 </td>
 
                 {/* Personal Number */}
-                <td className="py-4 px-4 font-mono font-semibold text-slate-300">
-                  <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 inline-block">
+                <td className="py-4 px-4 font-mono font-semibold text-slate-800">
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 inline-block text-xs">
                     {mantri.personalNumber}
                   </span>
                 </td>
 
                 {/* Branch & Unit */}
                 <td className="py-4 px-4">
-                  <span className="font-semibold text-slate-200 block">{mantri.unitName}</span>
-                  <span className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                    <Building2 className="w-3 h-3 text-slate-500" />
+                  <span className="font-semibold text-slate-900 block">{mantri.unitName}</span>
+                  <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                    <Building2 className="w-3 h-3 text-slate-400" />
                     {mantri.branchOffice}
                   </span>
                 </td>
@@ -99,13 +99,13 @@ export function MantriTable({ users, isLoading, onEdit, onQuickPin, onDelete }: 
                       mantri.assignedAreas.map((area, idx) => (
                         <span
                           key={idx}
-                          className="px-2 py-0.5 bg-slate-800 text-slate-300 text-[11px] rounded-md border border-slate-700"
+                          className="px-2 py-0.5 bg-slate-100 text-slate-700 text-[11px] font-medium rounded-md border border-slate-200"
                         >
                           {area}
                         </span>
                       ))
                     ) : (
-                      <span className="text-slate-500 text-xs italic">Belum dipetakan</span>
+                      <span className="text-slate-400 text-xs italic">Belum dipetakan</span>
                     )}
                   </div>
                 </td>
@@ -113,13 +113,13 @@ export function MantriTable({ users, isLoading, onEdit, onQuickPin, onDelete }: 
                 {/* PIN / Password */}
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-mono text-xs px-2 py-1 rounded bg-slate-950 border border-slate-800 text-slate-300">
+                    <span className="font-mono text-xs px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-slate-800">
                       {isRevealed ? mantri.pin : "••••••"}
                     </span>
                     <button
                       type="button"
                       onClick={() => toggleRevealPin(mantri.id)}
-                      className="p-1 text-slate-400 hover:text-slate-200 rounded"
+                      className="p-1 text-slate-400 hover:text-slate-700 rounded hover:bg-slate-100"
                       title={isRevealed ? "Sembunyikan PIN" : "Lihat PIN"}
                     >
                       {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -127,7 +127,7 @@ export function MantriTable({ users, isLoading, onEdit, onQuickPin, onDelete }: 
                     <button
                       type="button"
                       onClick={() => onQuickPin(mantri)}
-                      className="p-1 text-blue-400 hover:text-blue-300 rounded"
+                      className="p-1 text-amber-600 hover:text-amber-700 rounded hover:bg-amber-50"
                       title="Ganti PIN/Password Cepat"
                     >
                       <KeyRound className="w-3.5 h-3.5" />
@@ -141,7 +141,7 @@ export function MantriTable({ users, isLoading, onEdit, onQuickPin, onDelete }: 
                     <button
                       type="button"
                       onClick={() => onEdit(mantri)}
-                      className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 rounded-lg text-xs font-semibold flex items-center gap-1 border border-slate-700 transition-colors"
+                      className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#0857c3] rounded-lg text-xs font-semibold flex items-center gap-1 border border-blue-200 transition-colors"
                       title="Edit Profil & Penempatan"
                     >
                       <Edit2 className="w-3 h-3" />
@@ -151,7 +151,7 @@ export function MantriTable({ users, isLoading, onEdit, onQuickPin, onDelete }: 
                     <button
                       type="button"
                       onClick={() => onDelete(mantri)}
-                      className="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 rounded-lg text-xs border border-rose-500/30 transition-colors"
+                      className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs border border-rose-200 transition-colors"
                       title="Hapus Petugas"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

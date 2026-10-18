@@ -16,9 +16,9 @@ export default function AdminIndexPage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 text-sm">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-500 text-sm">
       <div className="flex items-center gap-3">
-        <div className="w-5 h-5 border-2 border-brand-accent border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-[#0857c3] border-t-transparent rounded-full animate-spin" />
         <span>Memverifikasi otorisasi administrator...</span>
       </div>
     </div>
